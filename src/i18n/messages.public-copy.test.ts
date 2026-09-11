@@ -36,6 +36,15 @@ describe('public chart copy', () => {
     expect(Object.keys(messages.de).sort()).toEqual(Object.keys(messages.en).sort());
   });
 
+  it('keeps custom-charts copy in one language per catalog', () => {
+    expect(messages.de['custom.title']).toBe('Eigene Charts');
+    expect(messages.en['custom.title']).toBe('Custom Charts');
+    expect(messages.de['custom.noCharts']).toBe('Noch keine eigenen Charts');
+    expect(messages.en['custom.noCharts']).toBe('No Custom Charts Yet');
+    expect(messages.de['custom.createFirstCta']).toBe('Erste Chart erstellen');
+    expect(messages.en['custom.createFirstCta']).toBe('Create your first chart');
+  });
+
   it('does not mix German and English in one string', () => {
     const bilingual = /\/\s*(accept all|essential only|cookie notice|loading)/i;
     for (const lang of ['de', 'en'] as const) {

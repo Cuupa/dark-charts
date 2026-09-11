@@ -205,7 +205,7 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
                     </>
                   ) : (
                     <div className="flex-1 font-ui text-sm text-muted-foreground italic pl-4">
-                      Slot leer
+                      {t('voting.emptySlot')}
                     </div>
                   )}
                 </div>
@@ -219,7 +219,7 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
                 disabled={selectedTracks.length !== 10}
                 onClick={handleSubmit}
               >
-                Top 10 verbindlich einreichen
+                {t('voting.submitTop10')}
               </Button>
             </div>
           </Card>
@@ -227,7 +227,7 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
 
         {/* Right Column: Track Pool */}
         <div className="space-y-4">
-          <h2 className="font-display text-xl uppercase tracking-wider">Track Pool</h2>
+          <h2 className="font-display text-xl uppercase tracking-wider">{t('voting.trackPool')}</h2>
 
           <div className="relative">
             <MagnifyingGlass
@@ -235,7 +235,7 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
             />
             <Input
-              placeholder="Search tracks or artists..."
+              placeholder={t('voting.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 font-ui"
@@ -268,14 +268,14 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
                   onClick={() => handleAddToTop10(track)}
                   disabled={selectedTracks.length >= 10}
                 >
-                  Hinzufügen
+                  {t('ui.add')}
                 </Button>
               </Card>
             ))}
 
             {filteredPool.length === 0 && (
               <div className="text-center p-8 text-muted-foreground font-ui text-sm">
-                Keine weiteren Tracks gefunden
+                {t('voting.noMoreTracks')}
               </div>
             )}
           </div>

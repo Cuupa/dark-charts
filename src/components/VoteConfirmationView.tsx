@@ -6,6 +6,7 @@ import { Lightning, CheckCircle, WarningCircle, CaretRight, ArrowLeft } from '@p
 import { useAuth } from '@/contexts/AuthContext';
 import { authFetch } from '@/lib/auth/client-fetch';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { logger } from '@/lib/logger';
 import { ROUTES } from '@/lib/routes';
 import { AlbumArtwork } from './AlbumArtwork';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -77,29 +78,29 @@ export function VoteConfirmationView({
     const fetchReceipt = async () => {
       try {
         if (!user) {
-          setError('Unauthorized');
+          setError(t('receipt.unauthorized'));
           return;
         }
 
         const res = await authFetch('/api/vote/receipt');
 
         if (!res.ok) {
-          throw new Error('Failed to fetch receipt');
+          throw new Error(t('receipt.loadError'));
         }
 
         const data = await res.json();
         setVotes(data.votes || []);
         setRemainingCredits(data.remainingCredits ?? null);
       } catch (err) {
-        console.error('Error fetching vote receipt:', err);
-        setError('Could not load your receipt.');
+        logger.error('Error fetching vote receipt', { error: err });
+        setError(t('receipt.loadError'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchReceipt();
-  }, [user]);
+  }, [user, t]);
 
   const totalCost = votes.reduce((sum, v) => sum + v.cost, 0);
 
@@ -116,14 +117,14 @@ export function VoteConfirmationView({
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
         <WarningCircle size={48} className="mx-auto text-destructive mb-4" />
-        <h2 className="text-xl font-display uppercase tracking-wider text-foreground mb-2">Error</h2>
+        <h2 className="text-xl font-display uppercase tracking-wider text-foreground mb-2">{t('receipt.error')}</h2>
         <p className="text-muted-foreground font-ui">{error}</p>
         <Button
           variant="outline"
           className="mt-6 uppercase tracking-wider font-ui"
           onClick={() => navigate('profile')}
         >
-          Zurück zum Profil
+          {t('receipt.backToProfile')}
         </Button>
       </div>
     );
@@ -141,10 +142,10 @@ export function VoteConfirmationView({
           <CheckCircle size={32} weight="fill" className="text-primary" />
         </div>
         <h1 className="font-display text-3xl md:text-4xl uppercase tracking-wider text-foreground">
-          Voting Eingereicht
+          {t('receipt.submitted')}
         </h1>
         <p className="font-ui text-muted-foreground max-w-lg mx-auto leading-relaxed border border-border p-4 bg-card">
-          Deine Stimmen für diese Woche sind sicher in der Datenbank. Die Wahlkabine ist für dich geschlossen.
+          {t('receipt.submittedBody')}
         </p>
       </div>
 
@@ -154,14 +155,14 @@ export function VoteConfirmationView({
         <div className="p-6 border-b border-border bg-secondary/50">
           <h2 className="font-ui text-sm uppercase tracking-[0.2em] text-foreground font-bold flex items-center gap-2">
             <Lightning size={16} className="text-accent" />
-            Digitaler Kassenbeleg
+            {t('receipt.title')}
           </h2>
         </div>
 
         <div className="divide-y divide-border">
           {votes.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground font-ui text-sm">
-              Keine Stimmen für diese Woche gefunden.
+              {t('receipt.empty')}
             </div>
           ) : (
             votes.map((vote) => (
@@ -188,12 +189,12 @@ export function VoteConfirmationView({
                 <div className="flex items-center gap-4 text-right">
                   <div className="hidden sm:block">
                     <span className="data-font text-lg font-bold">{vote.allocatedVotes}</span>
-                    <span className="font-ui text-[10px] text-muted-foreground uppercase tracking-widest ml-1">Stimmen</span>
+                    <span className="font-ui text-[10px] text-muted-foreground uppercase tracking-widest ml-1">{t('receipt.votes')}</span>
                   </div>
                   <CaretRight size={16} className="text-border hidden sm:block" />
                   <div className="bg-accent/10 px-3 py-1.5 border border-accent/20 min-w-[100px]">
                     <span className="data-font text-xl font-bold text-accent">{vote.cost}</span>
-                    <span className="font-ui text-[10px] text-accent/70 uppercase tracking-widest ml-1">Credits</span>
+                    <span className="font-ui text-[10px] text-accent/70 uppercase tracking-widest ml-1">{t('receipt.credits')}</span>
                   </div>
                 </div>
               </div>
@@ -203,7 +204,7 @@ export function VoteConfirmationView({
 
         <div className="p-6 bg-secondary/50 border-t border-border flex justify-between items-center">
           <span className="font-ui text-sm uppercase tracking-wider text-muted-foreground">
-            Verbrauchte Credits
+            {t('receipt.spentCredits')}
           </span>
           <div className="text-right">
             <span className="data-font text-2xl font-bold text-foreground">{totalCost}</span>
@@ -219,14 +220,14 @@ export function VoteConfirmationView({
           onClick={() => navigate('profile')}
         >
           <ArrowLeft size={16} />
-          Zurück zum Profil
+          {t('receipt.backToProfile')}
         </Button>
         <Button
           variant="secondary"
           className="h-14 font-ui uppercase tracking-widest bg-secondary hover:bg-secondary/80 text-foreground border border-border"
           onClick={() => navigate('history')}
         >
-          Chart-Archiv ansehen
+          {t('receipt.viewArchive')}
         </Button>
       </div>
 

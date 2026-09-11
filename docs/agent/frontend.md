@@ -52,7 +52,7 @@ Chart visuals use Recharts inside client leaves (`ChartShellClient`, `HomeCharts
 
 ## i18n / legal
 
-Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Cookie `lang` is the only language store (not `useKV` / `app-language`). `LanguageProvider` takes `initialLanguage` from the server layout. Switching uses `LanguageSwitcher` (DE | EN, `aria-pressed`) and `router.refresh()` so RSC pages follow. `<html lang>` matches the cookie. No hardcoded visitor strings; no `t(key) || 'English fallback'`; no `isEn ? '…' : '…'` for copy. Same key set in `de` and `en` (enforced in `messages.public-copy.test.ts`).
+Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Cookie `lang` is the only language store (not `useKV` / `app-language`). `LanguageProvider` takes `initialLanguage` from the server layout. Switching uses `LanguageSwitcher` (DE | EN, `aria-pressed`) and `router.refresh()` so RSC pages follow. `<html lang>` matches the cookie. No hardcoded visitor strings; no `t(key) || 'English fallback'`; no `isEn ? '…' : '…'` for copy. Same key set in `de` and `en` (enforced in `messages.public-copy.test.ts`). Keys in `messages.ts` are not enough — every live view must call `t()` (`CustomChartsView`, legal footer links, expert voting, vote receipt).
 
 Voice: spoken, warm, easy. Homepage stays short. Full ranking rules live on `/methodology` only. Names: Fan charts, Club charts, Overall charts, Streaming.
 

@@ -201,7 +201,7 @@ export function ChartShellClient({ children }: ChartShellClientProps) {
         const mainGenreIndex = safeFindIndex(mainGenreTracks, (t) => t?.id === track.id, -1);
         if (mainGenreIndex !== -1 && mainGenreIndex < 20) {
           positions.push({
-            chartName: `${mainGenre} Charts`,
+            chartName: `${mainGenre} ${t('nav.home')}`,
             position: mainGenreIndex + 1,
             mainGenre: mainGenre as MainGenre,
           });

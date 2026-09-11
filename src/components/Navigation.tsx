@@ -36,7 +36,7 @@ export function Navigation({ currentView, onNavigate, linkMode = false }: Naviga
         }}
         className={`flex items-center gap-3 px-4 py-3 border-b border-border snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
           ${currentView === 'home' ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary/20'}`}
-        aria-label={`Navigate to ${t('nav.home') || 'Home'}`}
+        aria-label={t('nav.home')}
         aria-current={currentView === 'home' ? 'page' : undefined}
       >
         <ChartLine weight="bold" className="w-5 h-5" aria-hidden="true" />
@@ -50,7 +50,7 @@ export function Navigation({ currentView, onNavigate, linkMode = false }: Naviga
         }}
         className={`flex items-center gap-3 px-4 py-3 border-b border-border snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
           ${currentView === 'custom-charts' ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-accent/20'}`}
-        aria-label={`Navigate to ${t('nav.custom') || 'Custom Charts'}`}
+        aria-label={t('nav.custom')}
         aria-current={currentView === 'custom-charts' ? 'page' : undefined}
       >
         <Sliders weight="bold" className="w-5 h-5" aria-hidden="true" />
@@ -64,7 +64,7 @@ export function Navigation({ currentView, onNavigate, linkMode = false }: Naviga
         }}
         className={`flex items-center gap-3 px-4 py-3 border-b border-border snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
           ${currentView === 'voting' ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-accent/20'}`}
-        aria-label={`Navigate to ${t('nav.voting') || 'Voting Area'}`}
+        aria-label={t('nav.voting')}
         aria-current={currentView === 'voting' ? 'page' : undefined}
       >
         <ChartBar weight="bold" className="w-5 h-5" aria-hidden="true" />
@@ -78,7 +78,7 @@ export function Navigation({ currentView, onNavigate, linkMode = false }: Naviga
         }}
         className={`flex items-center gap-3 px-4 py-3 border-b border-border snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
           ${currentView === 'history' ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-accent/20'}`}
-        aria-label={`Navigate to ${t('nav.history') || 'Chart History'}`}
+        aria-label={t('nav.history')}
         aria-current={currentView === 'history' ? 'page' : undefined}
       >
         <ClockCounterClockwise weight="bold" className="w-5 h-5" aria-hidden="true" />
@@ -92,7 +92,7 @@ export function Navigation({ currentView, onNavigate, linkMode = false }: Naviga
         }}
         className={`flex items-center gap-3 px-4 py-3 border-b border-border snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
           ${currentView === 'profile' ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-accent/20'}`}
-        aria-label={`Navigate to ${t('nav.profile') || 'Profile'}`}
+        aria-label={t('nav.profile')}
         aria-current={currentView === 'profile' ? 'page' : undefined}
       >
         <User weight="bold" className="w-5 h-5" aria-hidden="true" />
@@ -120,7 +120,7 @@ export function Navigation({ currentView, onNavigate, linkMode = false }: Naviga
         }}
         className={`flex items-center gap-3 px-4 py-3 border-b border-border snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
           ${currentView === 'about' ? 'bg-accent text-accent-foreground' : 'bg-card hover:bg-accent/20'}`}
-        aria-label={`Navigate to ${t('nav.about') || 'About'}`}
+        aria-label={t('nav.about')}
         aria-current={currentView === 'about' ? 'page' : undefined}
       >
         <Info weight="bold" className="w-5 h-5" aria-hidden="true" />
