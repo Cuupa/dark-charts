@@ -1,113 +1,30 @@
-import { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward } from '@phosphor-icons/react';
-import { Track } from '@/types';
-import { audioPlayerService } from '@/services/audioPlayerService';
-
-interface MusicPlayerProps {
-  currentTrack: Track | null;
-  onNext?: () => void;
-  onPrevious?: () => void;
-  allTracks?: Track[];
+'use client';
+import { useRef, useState } from 'react';
+import { Play, Pause, SkipBack, SkipForward, X } from '@phosphor-icons/react';
+import type { Track } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { AlbumArtwork } from './AlbumArtwork';
+interface MusicPlayerProps { currentTrack: Track | null; onNext?: () => void; onPrevious?: () => void; allTracks?: Track[]; onClose?: () => void; }
+export function MusicPlayer(props: MusicPlayerProps) {
+  return props.currentTrack ? <ActivePlayer key={props.currentTrack.id} {...props} track={props.currentTrack} /> : null;
 }
-
-export function MusicPlayer({ currentTrack, onNext, onPrevious }: MusicPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = audioPlayerService.addListener((playing) => {
-      setIsPlaying(playing);
-    });
-    return unsubscribe;
-  }, []);
-
-  if (!currentTrack) {
-    return null;
-  }
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-primary z-50">
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(255, 255, 255, 0.01) 2px,
-            rgba(255, 255, 255, 0.01) 4px
-          )`
-        }}
-      />
-      
-      <div className="max-w-[1800px] mx-auto px-4 md:px-8 py-4 relative z-10">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            {currentTrack.albumArt && (
-              <img 
-                src={currentTrack.albumArt} 
-                alt={currentTrack.title}
-                className="w-12 h-12 object-cover border border-border"
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="data-font text-sm font-bold text-foreground truncate">
-                {currentTrack.artist}
-              </div>
-              <div className="data-font text-xs text-muted-foreground truncate">
-                {currentTrack.title}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onPrevious}
-              disabled={!onPrevious}
-              aria-label="Previous Track"
-              className="w-8 h-8 flex items-center justify-center border border-border text-foreground hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed snap-transition"
-            >
-              <SkipBack weight="fill" className="w-4 h-4" aria-hidden="true" />
-            </button>
-
-            <button
-              onClick={handlePlayPause}
-              aria-label={isPlaying ? "Pause Track" : "Play Track"}
-              className="w-10 h-10 flex items-center justify-center border border-border bg-primary text-primary-foreground hover:glow-primary snap-transition"
-            >
-              {isPlaying ? (
-                <Pause weight="fill" className="w-5 h-5" aria-hidden="true" />
-              ) : (
-                <Play weight="fill" className="w-5 h-5" aria-hidden="true" />
-              )}
-            </button>
-
-            <button
-              onClick={onNext}
-              disabled={!onNext}
-              aria-label="Next Track"
-              className="w-8 h-8 flex items-center justify-center border border-border text-foreground hover:border-primary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed snap-transition"
-            >
-              <SkipForward weight="fill" className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2 flex-1">
-            <div className="flex-1 h-1 bg-secondary border border-border relative">
-              <div 
-                className="absolute inset-y-0 left-0 bg-primary"
-                style={{ width: isPlaying ? '35%' : '0%' }}
-              />
-            </div>
-            <div className="data-font text-xs text-muted-foreground tabular-nums">
-              {isPlaying ? '1:23' : '0:00'} / 3:45
-            </div>
-          </div>
-        </div>
-      </div>
+function ActivePlayer({ track, onNext, onPrevious, allTracks = [], onClose }: MusicPlayerProps & { track: Track }) {
+  const { t } = useLanguage();
+  const audio = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const index = allTracks.findIndex(item => item.id === track.id);
+  const toggle = () => { if (!audio.current) return; if (playing) audio.current.pause(); else void audio.current.play().catch(() => setError(true)); };
+  return <aside className="music-player" aria-label={t('ui.listen')}><div className="music-player-inner">
+    <AlbumArtwork src={track.albumArt} alt="" artist={track.artist} title={track.title} size="small" />
+    <div className="min-w-0 flex-1"><strong className="block truncate">{track.title}</strong><span className="text-sm text-muted-foreground">{track.artist}</span></div>
+    <div className="flex items-center gap-2">
+      <button className="chart-play" disabled={index <= 0} onClick={onPrevious} aria-label={t('ui.previous')}><SkipBack /></button>
+      {track.previewUrl && loaded && <button className="chart-play" onClick={toggle} aria-label={t(playing ? 'ui.pause' : 'ui.play')}>{playing ? <Pause /> : <Play />}</button>}
+      <button className="chart-play" disabled={index < 0 || index >= allTracks.length - 1} onClick={onNext} aria-label={t('ui.next')}><SkipForward /></button>
     </div>
-  );
+    <div className="player-media">{!track.previewUrl ? <span>{t('ui.noPreview')}</span> : !loaded ? <button className="text-link" onClick={() => setLoaded(true)}>{t('ui.loadMedia')}</button> : <audio ref={audio} src={track.previewUrl} controls preload="none" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setError(true)} />}{error && <span role="alert">{t('ui.mediaError')}</span>}</div>
+    <button className="chart-play" onClick={onClose} aria-label={t('ui.close')}><X /></button>
+  </div></aside>;
 }

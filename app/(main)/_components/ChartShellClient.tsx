@@ -18,14 +18,18 @@ import { logger } from '@/lib/logger';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { TrackDetailModal } from '@/components/TrackDetailModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { trackEnrichmentService } from '@/services/trackEnrichmentService';
-import { useUpcomingTrackPreloader, useVisibleTracksPreloader } from '@/hooks/use-artwork-cache';
-import { safeFilter, safeFindIndex, safeSlice } from '@/lib/safe-utils';
+import { safeFilter, safeFindIndex } from '@/lib/safe-utils';
 import { mainGenreMap } from '@/lib/config/genres';
 import { navigateToChart } from '@/lib/routes';
 import { useChartData } from '@/hooks/useChartData';
+import type { ChartEdition } from '@/types';
+import { isDemoMode } from '@/lib/demo/mode';
 
 export interface ChartShellContextValue {
+  edition?: ChartEdition;
+  error: string | null;
+  reload: () => void;
+  playTrack: (track: Track, queue?: Track[]) => void;
   fanCharts: Track[];
   expertCharts: Track[];
   isLoading: boolean;
@@ -80,7 +84,7 @@ function resolveActivePillar(pathname: string): ActivePillarView {
   return 'overview';
 }
 
-export function ChartShellClient({ children, visibleTracks }: ChartShellClientProps) {
+export function ChartShellClient({ children }: ChartShellClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const activePillar = resolveActivePillar(pathname);
@@ -94,11 +98,12 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
   const [hasVoted, setHasVoted] = useState(false);
   const [selectedTrackForModal, setSelectedTrackForModal] = useState<Track | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [playerQueue, setPlayerQueue] = useState<Track[]>([]);
   const {
     fanCharts,
     expertCharts,
     isLoading,
+    edition, error, reload,
     currentTrack,
     setCurrentTrack,
     selectedGenres,
@@ -107,8 +112,10 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
     filteredExpertCharts,
     overallChart,
   } = useChartData();
+  const playTrack = useCallback((track: Track, queue: Track[] = []) => { setPlayerQueue(queue); setCurrentTrack(track); }, [setCurrentTrack]);
 
   useEffect(() => {
+    if (isDemoMode()) return;
     fetch('/api/promotions')
       .then((res) => res.json())
       .then((data) => {
@@ -138,40 +145,10 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
     checkVoteStatus();
   }, [user]);
 
-  const allTracksForPlayer = useMemo(() => {
-    if (activePillar === 'overview') return overallChart;
-    if (activePillar === 'fan') return filteredFanCharts;
-    if (activePillar === 'club') return filteredExpertCharts;
-    return overallChart;
-  }, [activePillar, overallChart, filteredFanCharts, filteredExpertCharts]);
-
-  const defaultVisibleTracks = useMemo(() => {
-    if (activePillar === 'overview') return overallChart;
-    if (activePillar === 'fan') return filteredFanCharts;
-    if (activePillar === 'club') return filteredExpertCharts;
-    return overallChart;
-  }, [activePillar, overallChart, filteredFanCharts, filteredExpertCharts]);
-
-  useUpcomingTrackPreloader(currentTrack, allTracksForPlayer, 5);
-  useVisibleTracksPreloader(visibleTracks ?? defaultVisibleTracks, 10);
-
-  const handleTrackClick = useCallback(
-    async (track: Track) => {
-      if (!track) return;
-      let enrichedTrack = track;
-      if (trackEnrichmentService?.enrichTrack) {
-        try {
-          enrichedTrack = await trackEnrichmentService.enrichTrack(track);
-        } catch (enrichmentError) {
-          logger.error('Failed to enrich track:', { error: enrichmentError });
-        }
-      }
-      setSelectedTrackForModal(enrichedTrack);
-      setIsModalOpen(true);
-      setCurrentTrack(enrichedTrack);
-    },
-    [setCurrentTrack]
-  );
+  const handleTrackClick = useCallback(async (track: Track) => {
+    setSelectedTrackForModal(track);
+    setIsModalOpen(true);
+  }, []);
 
   const handleToggleGenre = useCallback(
     (genre: Genre) => {
@@ -259,24 +236,25 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
 
   const handleNext = useCallback(() => {
     if (!currentTrack) return;
-    const allTracks = allTracksForPlayer;
+    const allTracks = playerQueue;
     const currentIndex = safeFindIndex(allTracks, (t) => t?.id === currentTrack.id, -1);
     if (currentIndex < allTracks.length - 1) {
       setCurrentTrack(allTracks[currentIndex + 1]);
     }
-  }, [currentTrack, allTracksForPlayer, setCurrentTrack]);
+  }, [currentTrack, playerQueue, setCurrentTrack]);
 
   const handlePrevious = useCallback(() => {
     if (!currentTrack) return;
-    const allTracks = allTracksForPlayer;
+    const allTracks = playerQueue;
     const currentIndex = safeFindIndex(allTracks, (t) => t?.id === currentTrack.id, -1);
     if (currentIndex > 0) {
       setCurrentTrack(allTracks[currentIndex - 1]);
     }
-  }, [currentTrack, allTracksForPlayer, setCurrentTrack]);
+  }, [currentTrack, playerQueue, setCurrentTrack]);
 
   const value = useMemo<ChartShellContextValue>(
     () => ({
+      edition, error, reload, playTrack,
       fanCharts,
       expertCharts,
       isLoading,
@@ -297,6 +275,7 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
       handleNavigateToChart,
     }),
     [
+      edition, error, reload, playTrack,
       fanCharts,
       expertCharts,
       isLoading,
@@ -321,12 +300,13 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
     <ChartShellContext.Provider value={value}>
       {children}
       <ErrorBoundary level="component">
-        {pathname.startsWith('/voting') ? null : (
+        {(
           <MusicPlayer
             currentTrack={currentTrack}
             onNext={handleNext}
             onPrevious={handlePrevious}
-            allTracks={[...(fanCharts || []), ...(expertCharts || [])]}
+            allTracks={playerQueue}
+            onClose={() => setCurrentTrack(null)}
           />
         )}
       </ErrorBoundary>

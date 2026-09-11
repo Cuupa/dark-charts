@@ -1,11 +1,9 @@
 'use client';
 
-import { Suspense, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { PromotionalSlot } from '@/components/PromotionalSlot';
-import { ChartNavigation } from './ChartNavigation';
 import { useChartShell } from './ChartShellClient';
 
 interface MainLayoutClientProps {
@@ -25,19 +23,12 @@ export function MainLayoutClient({ children }: MainLayoutClientProps) {
   const { activePromotion } = useChartShell();
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden pt-16">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-4 md:px-8">
+    <div className="min-h-[70vh] bg-background relative pt-20">
+      <main id="main-content" className="public-content relative z-10 mx-auto w-full max-w-7xl px-4 py-6 md:px-8 pb-32">
         <DataSourceBanner />
-      </div>
-      <ErrorBoundary level="component">
-        <Suspense fallback={null}>
-          <ChartNavigation />
-        </Suspense>
-      </ErrorBoundary>
-
-      <main id="main-content" className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 md:px-8 pb-28">
+        {children}
         {activePromotion && shouldShowSpotlight(pathname) && (
-          <div className="mb-8">
+          <div className="mt-8">
             <PromotionalSlot
               type={activePromotion.type}
               name={activePromotion.name}
@@ -45,7 +36,6 @@ export function MainLayoutClient({ children }: MainLayoutClientProps) {
             />
           </div>
         )}
-        {children}
       </main>
     </div>
   );

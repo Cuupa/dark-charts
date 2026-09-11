@@ -2,15 +2,22 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { tryCreateServiceRoleSupabaseClient } from '@/lib/supabase/server';
-import { getPublicRelease } from '@/lib/api/public-catalog';
+import { getPublicRelease, type PublicRelease } from '@/lib/api/public-catalog';
 import { artistPath, releasePath } from '@/lib/routes';
 import { getTranslator } from '@/i18n/server';
+import { getDemoRelease } from '@/lib/demo/catalog';
+import { isDemoMode } from '@/lib/demo/mode';
 
 interface ReleasePageProps {
   params: Promise<{ id: string }>;
 }
 
 async function loadRelease(id: string) {
+  if (isDemoMode()) {
+    const track = getDemoRelease(id);
+    if (!track) return null;
+    return { id: track.id, title: track.title, releaseDate: track.releaseDate ?? '', releaseType: track.releaseType ?? 'single', artworkUrl: track.albumArt ?? null, spotifyId: null, genres: track.genres, artist: { id: track.artistId ?? track.id, name: track.artist, imageUrl: null, verified: false } } satisfies PublicRelease;
+  }
   const supabase = tryCreateServiceRoleSupabaseClient();
   if (!supabase) return null;
   return getPublicRelease(supabase, id);
