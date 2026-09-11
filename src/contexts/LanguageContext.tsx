@@ -1,5 +1,4 @@
-import { createContext, useContext, useCallback, useEffect, type ReactNode } from 'react';
-import { useKV } from '@/hooks/useKV';
+import { createContext, useContext, useCallback, useState, type ReactNode } from 'react';
 import { writeLangCookie } from '@/i18n/cookie';
 import { messages } from '@/i18n/messages';
 import { lookupMessage, type Language, type MessageVars } from '@/i18n/translate';
@@ -14,29 +13,27 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useKV<Language>('app-language', 'de');
-  const current = language || 'de';
+export function LanguageProvider({
+  children,
+  initialLanguage = 'de',
+}: {
+  children: ReactNode;
+  initialLanguage?: Language;
+}) {
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
 
-  const setLanguage = useCallback(
-    (lang: Language) => {
-      writeLangCookie(lang);
-      void setLanguageState(lang);
-    },
-    [setLanguageState]
-  );
-
-  useEffect(() => {
-    writeLangCookie(current);
-  }, [current]);
+  const setLanguage = useCallback((lang: Language) => {
+    writeLangCookie(lang);
+    setLanguageState(lang);
+  }, []);
 
   const t = useCallback(
-    (key: string, vars?: MessageVars) => lookupMessage(messages, current, key, vars),
-    [current]
+    (key: string, vars?: MessageVars) => lookupMessage(messages, language, key, vars),
+    [language]
   );
 
   return (
-    <LanguageContext.Provider value={{ language: current, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

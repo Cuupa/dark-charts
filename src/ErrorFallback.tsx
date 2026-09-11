@@ -3,6 +3,9 @@ import { Button } from "./components/ui/button";
 
 import { AlertTriangleIcon, RefreshCwIcon } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { messages } from "@/i18n/messages";
+import { lookupMessage } from "@/i18n/translate";
+import { readLangCookie } from "@/i18n/cookie";
 
 interface ErrorFallbackProps {
   error: Error;
@@ -16,19 +19,21 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps)
     logger.error('Uncaught error in ErrorFallback', { error });
   }
 
+  const tx = (key: string) => lookupMessage(messages, readLangCookie() ?? 'de', key);
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangleIcon />
-          <AlertTitle>This spark has encountered a runtime error</AlertTitle>
+          <AlertTitle>{tx('error.system')}</AlertTitle>
           <AlertDescription>
-            Something unexpected happened while running the application. The error details are shown below. Contact the spark author and let them know about this issue.
+            {tx('error.generic')}
           </AlertDescription>
         </Alert>
         
         <div className="bg-card border rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-sm text-muted-foreground mb-2">Error Details:</h3>
+          <h3 className="font-semibold text-sm text-muted-foreground mb-2">{tx('error.details')}</h3>
           <pre className="text-xs text-destructive bg-muted/50 p-3 rounded border overflow-auto max-h-32">
             {error.message}
           </pre>
@@ -40,7 +45,7 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps)
           variant="outline"
         >
           <RefreshCwIcon />
-          Try Again
+          {tx('error.retry')}
         </Button>
       </div>
     </div>

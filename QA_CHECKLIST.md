@@ -6,6 +6,7 @@
 - [ ] `/charts/streaming` shows snapshot-based popularity or empty — never iTunes/mock stand-ins; overall stays fan+club only
 - [ ] Airplay snapshots never change Combined / Fan / Club placements; `/api/charts?type=airplay` is empty until events exist
 - [ ] Genre pages: main genre lists subgenres; subgenre page filters correctly (niche windows applied)
+- [ ] Language: default is German; DE | EN in the header both stay visible; switching sets cookie `lang` and `<html lang>`; `/`, `/charts/fan`, `/login`, cookie banner, skip link, and `/release/[id]` stay in one language with no bilingual slash copy
 - [ ] Methodology, About, home, Fan/Club/Streaming, and voting pages explain how charts work in plain language (DE + EN)
 - [ ] Public labels are Fan / Club / Overall / Streaming — not “Die Liste” / “Szene” / “Listen”
 - [ ] Default theme matches darkTunes CI (`#0d0d1a`, `#6d28d9`, Orbitron + Exo 2); header is a wordmark, chart rows have no CRT scanlines

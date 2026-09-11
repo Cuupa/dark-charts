@@ -289,9 +289,9 @@ function FanProfileView({
     try {
       await updateProfile({ username, biography });
       setIsEditing(false);
-      toast.success(t('profile.saveChanges') || 'Profile updated successfully!');
+      toast.success(t('profile.saveSuccess'));
     } catch (error) {
-      toast.error(t('oauth.loginFailed') || 'Failed to update profile');
+      toast.error(t('profile.saveFailed'));
     }
   };
 
@@ -476,7 +476,7 @@ function BandLabelProfileView({ userType }: { userType: 'band' | 'label' }) {
           </div>
           <Button variant="outline" onClick={() => logout()} className="font-ui text-[10px] uppercase">
             <SignOut weight="bold" className="w-4 h-4 mr-1" />
-            {t('profile.signOut') || 'Sign out'}
+            {t('profile.signOut')}
           </Button>
         </div>
       </Card>

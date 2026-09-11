@@ -19,25 +19,25 @@ export function SiteFooter() {
 
           <nav
             className="md:col-span-2 flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider content-start"
-            aria-label={t('footer.legalNav') || 'Legal'}
+            aria-label={t('footer.legalNav')}
           >
             <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t('footer.about') || 'Über uns'}
+              {t('footer.about')}
             </Link>
             <Link href="/methodology" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t('footer.methodology') || 'Methodik'}
+              {t('footer.methodology')}
             </Link>
             <Link href="/spotlight" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t('footer.spotlight') || 'Spotlight'}
+              {t('footer.spotlight')}
             </Link>
             <Link href="/imprint" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t('footer.imprint') || 'Impressum'}
+              {t('footer.imprint')}
             </Link>
             <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t('footer.privacy') || 'Datenschutz'}
+              {t('footer.privacy')}
             </Link>
             <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-              {t('footer.terms') || 'AGB'}
+              {t('footer.terms')}
             </Link>
           </nav>
         </div>

@@ -38,7 +38,7 @@ export function CentralLoginForm() {
         });
 
         if (!response.ok) {
-          toast.error(t('auth.loginFailed') || 'Login failed');
+          toast.error(t('auth.loginFailed'));
           return;
         }
 
@@ -50,7 +50,7 @@ export function CentralLoginForm() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        toast.error(t('auth.loginFailed') || 'Login failed');
+        toast.error(t('auth.loginFailed'));
         return;
       }
 
@@ -66,7 +66,7 @@ export function CentralLoginForm() {
 
       window.location.assign(resolveRedirectPath(role, returnTo));
     } catch {
-      toast.error(t('auth.loginFailed') || 'Login failed');
+      toast.error(t('auth.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +74,7 @@ export function CentralLoginForm() {
 
   const handleForgot = async () => {
     if (!email.trim()) {
-      toast.error(t('auth.emailRequired') || 'Please enter your email first');
+      toast.error(t('auth.emailRequired'));
       return;
     }
 
@@ -82,19 +82,19 @@ export function CentralLoginForm() {
     try {
       const supabase = tryCreateBrowserSupabaseClient();
       if (!supabase) {
-        toast.error(t('auth.resetFailed') || 'Could not send reset email');
+        toast.error(t('auth.resetFailed'));
         return;
       }
 
       const redirectTo = `${window.location.origin}/auth/callback?recovery=1`;
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
       if (error) {
-        toast.error(t('auth.resetFailed') || 'Could not send reset email');
+        toast.error(t('auth.resetFailed'));
       } else {
-        toast.success(t('auth.resetSent') || 'Password reset email sent');
+        toast.success(t('auth.resetSent'));
       }
     } catch {
-      toast.error(t('auth.resetFailed') || 'Could not send reset email');
+      toast.error(t('auth.resetFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -110,23 +110,23 @@ export function CentralLoginForm() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
-            {t('auth.loginTitle') || 'Dark Charts Login'}
+            {t('auth.loginTitle')}
           </CardTitle>
           <CardDescription>
-            {t('auth.loginDescription') || 'Sign in to vote, manage your profile, or access the admin area.'}
+            {t('auth.loginDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {errorParam === 'unauthorized' && (
             <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               <Warning size={18} weight="bold" className="mt-0.5 shrink-0" aria-hidden="true" />
-              <p>{t('auth.unauthorized') || 'You do not have permission to access that area.'}</p>
+              <p>{t('auth.unauthorized')}</p>
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email') || 'Email'}</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -141,14 +141,14 @@ export function CentralLoginForm() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t('auth.password') || 'Password'}</Label>
+                <Label htmlFor="password">{t('auth.password')}</Label>
                 <button
                   type="button"
                   className="text-xs text-primary hover:underline"
                   onClick={handleForgot}
                   disabled={isLoading}
                 >
-                  {t('auth.forgotPassword') || 'Forgot password?'}
+                  {t('auth.forgotPassword')}
                 </button>
               </div>
               <Input
@@ -163,7 +163,7 @@ export function CentralLoginForm() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading} size="lg">
-              {isLoading ? (t('auth.signingIn') || 'Signing in…') : (t('auth.signIn') || 'Sign in')}
+              {isLoading ? (t('auth.signingIn')) : (t('auth.signIn'))}
             </Button>
           </form>
         </CardContent>
