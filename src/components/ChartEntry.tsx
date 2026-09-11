@@ -33,7 +33,7 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
   
   return (
     <li
-      className="relative flex flex-col gap-3 p-4 border-b border-border group overflow-hidden cursor-pointer hover:bg-primary/5 transition-colors"
+      className="relative flex flex-col gap-3 p-4 border-b border-border group cursor-pointer hover:bg-primary/5 transition-colors"
       onClick={() => onClick?.(track)}
       role="button"
       tabIndex={0}
@@ -142,7 +142,7 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
               <Badge 
                 key={idx} 
                 variant="outline"
-                className="uppercase text-[8px] font-ui font-semibold tracking-[0.1em] border border-border text-foreground/70 hover:bg-primary/20 hover:border-primary/50 snap-transition px-1.5 py-0.5 truncate max-w-[120px]"
+                className="uppercase text-[10px] font-ui font-semibold tracking-normal border border-border text-foreground/70 hover:bg-primary/20 hover:border-primary/50 snap-transition px-2 py-0.5 overflow-visible whitespace-nowrap"
                 title={genre}
               >
                 {genre}

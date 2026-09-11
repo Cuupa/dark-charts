@@ -15,6 +15,16 @@ export async function getItunesChartResponse(params: {
   count: number;
   source: 'itunes';
 }> {
+  if (params.type === 'streaming') {
+    return {
+      success: true,
+      chartType: 'streaming',
+      entries: [],
+      count: 0,
+      source: 'itunes',
+    };
+  }
+
   await ensureItunesChartsBootstrapped();
 
   let genreFilter: string | undefined;
@@ -26,8 +36,7 @@ export async function getItunesChartResponse(params: {
     mainGenreFilter = params.mainGenre as MainGenre;
   }
 
-  const chartType = params.type === 'streaming' ? 'fan' : params.type;
-  const entries = buildItunesChartEntries(chartType, {
+  const entries = buildItunesChartEntries(params.type, {
     limit: params.limit,
     genre: genreFilter,
     mainGenre: mainGenreFilter,

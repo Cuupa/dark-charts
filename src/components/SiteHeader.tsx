@@ -42,7 +42,7 @@ export function SiteHeader() {
             className="flex items-center shrink-0 focus-visible:ring-2 focus-visible:ring-ring outline-none"
             aria-label={t('a11y.home')}
           >
-            <span className="display-font text-sm md:text-base text-foreground">Dark Charts</span>
+            <span className="display-font text-sm md:text-base leading-none text-foreground">Dark Charts</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1" aria-label={t('a11y.nav')}>

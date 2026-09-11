@@ -52,7 +52,7 @@ Chart visuals use Recharts inside client leaves (`ChartShellClient`, `HomeCharts
 
 ## i18n / legal
 
-Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`. Voice: warm, human, scene-authentic, easy to understand. Names: Fan charts, Club charts, Overall charts, Streaming. Explain how voting and ranking work in plain language — no quadratic/Sybil/formula jargon, no clipped club-announcer bark. Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
+Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`. Voice: spoken, warm, easy. Homepage stays short. Full ranking rules (points cost, Club top 10, trust, streaming isolation) live on `/methodology` only — still no quadratic/Sybil jargon. Names: Fan charts, Club charts, Overall charts, Streaming. Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
 
 ## Class names & layout
 
