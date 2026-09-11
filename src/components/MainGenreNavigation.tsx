@@ -5,12 +5,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+export type GenreNavValue = MainGenre | 'overall';
+
 interface MainGenreNavigationProps {
-  activeGenre: MainGenre | 'overall';
+  activeGenre: GenreNavValue;
   onGenreChange: (genre: MainGenre) => void;
   className?: string;
   linkMode?: boolean;
-  getGenreHref?: (genre: MainGenre) => string;
+  getGenreHref?: (genre: GenreNavValue) => string;
 }
 
 export function MainGenreNavigation({
@@ -24,14 +26,18 @@ export function MainGenreNavigation({
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
-  const renderGenre = (
-    genre: { value: MainGenre; label: string },
-    className: string,
-    dataGenre?: string
-  ) => {
+  const items: { value: GenreNavValue; label: string }[] = [
+    { value: 'overall', label: t('genre.all') },
+    { value: 'Gothic', label: t('genre.gothic') },
+    { value: 'Metal', label: t('genre.metal') },
+    { value: 'Dark Electro', label: t('genre.darkelectro') },
+    { value: 'Crossover', label: t('genre.crossover') },
+  ];
+
+  const renderGenre = (genre: { value: GenreNavValue; label: string }, className: string) => {
     if (linkMode && getGenreHref) {
       return (
-        <Link key={genre.value} href={getGenreHref(genre.value)} className={className} data-genre={dataGenre}>
+        <Link key={genre.value} href={getGenreHref(genre.value)} className={className} data-genre={genre.value}>
           {genre.label}
         </Link>
       );
@@ -40,8 +46,10 @@ export function MainGenreNavigation({
     return (
       <button
         key={genre.value}
-        data-genre={dataGenre}
-        onClick={() => onGenreChange(genre.value)}
+        data-genre={genre.value}
+        onClick={() => {
+          if (genre.value !== 'overall') onGenreChange(genre.value);
+        }}
         className={className}
       >
         {genre.label}
@@ -49,12 +57,19 @@ export function MainGenreNavigation({
     );
   };
 
-  const genres: { value: MainGenre; label: string }[] = [
-    { value: 'Gothic', label: t('genre.gothic') },
-    { value: 'Metal', label: t('genre.metal') },
-    { value: 'Dark Electro', label: t('genre.darkelectro') },
-    { value: 'Crossover', label: t('genre.crossover') },
-  ];
+  const itemClass = (value: GenreNavValue, mobile: boolean) =>
+    cn(
+      mobile
+        ? 'flex-shrink-0 snap-center px-6 py-3 font-ui text-xs uppercase tracking-[0.15em] font-bold snap-transition border'
+        : 'flex-1 px-4 py-3 font-ui text-sm uppercase tracking-[0.15em] font-bold snap-transition border-r last:border-r-0 border-border',
+      activeGenre === value
+        ? mobile
+          ? 'bg-accent text-accent-foreground border-accent'
+          : 'bg-accent text-accent-foreground'
+        : mobile
+          ? 'bg-card text-muted-foreground border-border hover:bg-accent/20'
+          : 'bg-card text-muted-foreground hover:bg-accent/20 hover:text-foreground'
+    );
 
   useEffect(() => {
     if (isMobile && scrollRef.current) {
@@ -66,7 +81,7 @@ export function MainGenreNavigation({
   }, [activeGenre, isMobile]);
 
   return (
-    <div className={cn("w-full border-t border-border", className)}>
+    <div className={cn('w-full border-t border-border', className)}>
       <div className="w-full px-4 md:px-8 py-2">
         <div className="mx-auto max-w-7xl">
           {isMobile ? (
@@ -75,32 +90,11 @@ export function MainGenreNavigation({
               className="flex overflow-x-auto gap-2 snap-x snap-mandatory scrollbar-hide"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {genres.map((genre) =>
-                renderGenre(
-                  genre,
-                  cn(
-                    'flex-shrink-0 snap-center px-6 py-3 font-ui text-xs uppercase tracking-[0.15em] font-bold snap-transition border',
-                    activeGenre === genre.value
-                      ? 'bg-accent text-accent-foreground border-accent'
-                      : 'bg-card text-muted-foreground border-border hover:bg-accent/20'
-                  ),
-                  genre.value
-                )
-              )}
+              {items.map((genre) => renderGenre(genre, itemClass(genre.value, true)))}
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-0 overflow-hidden border border-border">
-              {genres.map((genre) =>
-                renderGenre(
-                  genre,
-                  cn(
-                    'flex-1 px-6 py-4 font-ui text-sm uppercase tracking-[0.15em] font-bold snap-transition border-r last:border-r-0 border-border',
-                    activeGenre === genre.value
-                      ? 'bg-accent text-accent-foreground'
-                      : 'bg-card text-muted-foreground hover:bg-accent/20 hover:text-foreground'
-                  )
-                )
-              )}
+            <div className="flex items-center justify-center gap-0 border border-border">
+              {items.map((genre) => renderGenre(genre, itemClass(genre.value, false)))}
             </div>
           )}
         </div>

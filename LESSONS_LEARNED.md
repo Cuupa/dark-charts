@@ -42,6 +42,12 @@ Distilled anti-patterns from project history. **Append session findings before o
 
 ## Session additions
 
+### 2026-09-11 — Spec language leaked onto the public DJ page
+
+**Symptom:** `/djs` explained “we only show public names, never emails.” Nobody asked.
+**Cause:** An API/privacy constraint from `features.md` was copied into `djs.description` as visitor copy.
+**Rule / Fix:** Public copy is what you’d say to someone in the scene. Implementation constraints stay in agent specs and code. Denylist test in `messages.public-copy.test.ts`.
+
 ### 2026-09-11 — Club-announcer copy hid how the charts work
 
 **Symptom:** Public strings were cut to barky fragments (“Hau rauf.”, “Die Liste”, “Kein Deal.”). Nobody understood Fan vs Club vs Streaming.

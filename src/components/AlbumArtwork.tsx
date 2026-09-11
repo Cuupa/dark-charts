@@ -6,7 +6,7 @@ interface AlbumArtworkProps {
   alt: string;
   artist: string;
   title: string;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'podium';
   glowColor?: string;
   showLoadingIndicator?: boolean;
   priority?: number;
@@ -24,7 +24,8 @@ export function AlbumArtwork({
   const sizeMap = {
     small: { width: 64, height: 64 },
     medium: { width: 80, height: 80 },
-    large: { width: 128, height: 128 }
+    large: { width: 128, height: 128 },
+    podium: { width: 176, height: 176 },
   };
 
   const { width, height } = sizeMap[size];

@@ -1,22 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ChartEntry } from '@/components/ChartEntry';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { HybridChartTable } from '@/components/HybridChartTable';
 import { ChartSidebar } from '@/components/ChartSidebar';
-import { ChartEntrySkeleton } from '@/components/skeletons';
+import { ChartRankedList } from '@/components/ChartRankedList';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useChartShell } from './ChartShellClient';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useChartGenre } from '@/hooks/useChartGenre';
+import { filterTracksByMainGenre } from '@/lib/charts/genre-filter';
 import { formatHybridWeightsPercent } from '@/lib/math/normalization';
 import { DEFAULT_CHART_WEIGHTS } from '@/lib/api/systemSettings';
-import type { ChartWeights } from '@/types';
+import type { ChartWeights, Genre, Track } from '@/types';
 
 export function HomeChartsView() {
+  return (
+    <Suspense fallback={null}>
+      <HomeChartsViewInner />
+    </Suspense>
+  );
+}
+
+function HomeChartsViewInner() {
   const { overallChart, isLoading, handleTrackClick, hasVoted } = useChartShell();
   const { t } = useLanguage();
+  const genre = useChartGenre();
   const [weights, setWeights] = useState<ChartWeights>(DEFAULT_CHART_WEIGHTS);
 
   useEffect(() => {
@@ -28,6 +37,11 @@ export function HomeChartsView() {
       .catch(() => {});
   }, []);
 
+  const tracks = useMemo(
+    () => filterTracksByMainGenre(overallChart, genre),
+    [overallChart, genre]
+  );
+
   const pct = formatHybridWeightsPercent(weights);
   const weightsLabel = t('chart.weightsFormula')
     .replace('{fan}', String(pct.fan))
@@ -36,10 +50,11 @@ export function HomeChartsView() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
       <HybridChartTable
-        tracks={overallChart}
+        tracks={tracks}
         isLoading={isLoading}
         onTrackClick={handleTrackClick}
         weightsLabel={weightsLabel}
+        genre={genre}
       />
       <ChartSidebar hasVoted={hasVoted} />
     </div>
@@ -48,7 +63,8 @@ export function HomeChartsView() {
 
 function StreamingPillarList() {
   const { t } = useLanguage();
-  const [tracks, setTracks] = useState<import('@/types').Track[]>([]);
+  const genre = useChartGenre();
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -62,7 +78,7 @@ function StreamingPillarList() {
           rank: entry.placement,
           artist: entry.release?.artist?.name || t('chart.unknownArtist'),
           title: entry.release?.title || t('chart.unknownTitle'),
-          genres: (entry.release?.artist?.genres || []) as import('@/types').Genre[],
+          genres: (entry.release?.artist?.genres || []) as Genre[],
           movement: entry.movement ?? 0,
           chartType: 'streaming' as const,
           albumArt: entry.release?.itunesArtworkUrl || entry.release?.vercelBlobUrl || undefined,
@@ -81,30 +97,23 @@ function StreamingPillarList() {
     };
   }, [t]);
 
+  const filtered = useMemo(() => filterTracksByMainGenre(tracks, genre), [tracks, genre]);
+  const title = genre ? `${t('pillar.streaming')} · ${genre}` : t('pillar.streaming');
+
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold leading-tight">
+          {title}
+        </h2>
+        <p className="font-ui text-sm text-muted-foreground leading-relaxed">{t('pillar.streamingLead')}</p>
+      </div>
       <ErrorBoundary level="component">
-        <Card className="bg-card border border-border">
-          <div className="p-4 md:p-5 border-b border-border space-y-2">
-            <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
-              {t('pillar.streaming')}
-            </h2>
-            <p className="font-ui text-sm text-muted-foreground leading-relaxed">{t('pillar.streamingLead')}</p>
-          </div>
-          {isLoading ? (
-            <div>
-              {Array.from({ length: 10 }).map((_, index) => (
-                <ChartEntrySkeleton key={index} index={index} />
-              ))}
-            </div>
-          ) : tracks.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">{t('chart.streamingEmpty')}</p>
-          ) : (
-            tracks.map((track, index) => (
-              <ChartEntry key={track.id} track={track} index={index} />
-            ))
-          )}
-        </Card>
+        {isLoading || filtered.length > 0 ? (
+          <ChartRankedList tracks={filtered} isLoading={isLoading} />
+        ) : (
+          <p className="p-6 text-sm text-muted-foreground border border-border bg-card">{t('chart.streamingEmpty')}</p>
+        )}
       </ErrorBoundary>
     </div>
   );
@@ -115,66 +124,38 @@ interface PillarChartListProps {
 }
 
 const PILLAR_CONFIG = {
-  fan: { titleKey: 'pillar.fan' as const, tracksKey: 'filteredFanCharts' as const },
-  club: { titleKey: 'pillar.club' as const, tracksKey: 'filteredExpertCharts' as const },
+  fan: { titleKey: 'pillar.fan' as const, tracksKey: 'filteredFanCharts' as const, leadKey: 'pillar.fanLead' as const },
+  club: { titleKey: 'pillar.club' as const, tracksKey: 'filteredExpertCharts' as const, leadKey: 'pillar.clubLead' as const },
 };
 
 export function PillarChartList({ pillar }: PillarChartListProps) {
-  if (pillar === 'streaming') {
-    return <StreamingPillarList />;
-  }
-  return <VotePillarList pillar={pillar} />;
+  return (
+    <Suspense fallback={null}>
+      {pillar === 'streaming' ? <StreamingPillarList /> : <VotePillarList pillar={pillar} />}
+    </Suspense>
+  );
 }
 
 function VotePillarList({ pillar }: { pillar: 'fan' | 'club' }) {
   const shell = useChartShell();
   const { t } = useLanguage();
+  const genre = useChartGenre();
   const config = PILLAR_CONFIG[pillar];
-  const tracks = shell[config.tracksKey];
+  const source = shell[config.tracksKey];
+  const tracks = useMemo(() => filterTracksByMainGenre(source, genre), [source, genre]);
   const { isLoading, handleTrackClick } = shell;
+  const title = genre ? `${t(config.titleKey)} · ${genre}` : t(config.titleKey);
 
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold leading-tight">
+          {title}
+        </h2>
+        <p className="font-ui text-sm text-muted-foreground leading-relaxed">{t(config.leadKey)}</p>
+      </div>
       <ErrorBoundary level="component">
-        <Card className="bg-card border border-border">
-          <div className="p-4 md:p-5 border-b border-border space-y-2">
-            <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
-              {t(config.titleKey)}
-            </h2>
-            <p className="font-ui text-sm text-muted-foreground leading-relaxed">
-              {t(pillar === 'fan' ? 'pillar.fanLead' : 'pillar.clubLead')}
-            </p>
-          </div>
-          {isLoading ? (
-            <div>
-              {Array.from({ length: 20 }).map((_, index) => (
-                <ChartEntrySkeleton key={index} index={index} />
-              ))}
-            </div>
-          ) : (
-            <motion.div layout>
-              <AnimatePresence mode="popLayout">
-                {tracks.map((track, index) => (
-                  <motion.div
-                    key={track?.id || `track-${index}`}
-                    layoutId={`track-${track?.id || index}`}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <ChartEntry
-                      track={track}
-                      index={index}
-                      onClick={handleTrackClick}
-                      animate
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </Card>
+        <ChartRankedList tracks={tracks} isLoading={isLoading} onTrackClick={handleTrackClick} />
       </ErrorBoundary>
     </div>
   );

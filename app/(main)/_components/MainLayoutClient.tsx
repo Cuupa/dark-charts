@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
@@ -26,12 +26,16 @@ export function MainLayoutClient({ children }: MainLayoutClientProps) {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden pt-16">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-4 md:px-8">
+        <DataSourceBanner />
+      </div>
       <ErrorBoundary level="component">
-        <ChartNavigation />
+        <Suspense fallback={null}>
+          <ChartNavigation />
+        </Suspense>
       </ErrorBoundary>
 
       <main id="main-content" className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 md:px-8 pb-28">
-        <DataSourceBanner />
         {activePromotion && shouldShowSpotlight(pathname) && (
           <div className="mb-8">
             <PromotionalSlot
