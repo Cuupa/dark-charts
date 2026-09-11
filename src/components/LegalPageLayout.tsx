@@ -16,7 +16,7 @@ export function LegalPageLayout({ content, showOperatorAddress = false }: LegalP
   const legal = getLegalConfig();
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8 py-8 px-4">
+    <div className="w-full max-w-4xl mx-auto space-y-8">
       <div className="space-y-2">
         <h1 className="font-display text-3xl uppercase text-foreground">{content.title}</h1>
         {content.updated && (

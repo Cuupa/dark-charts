@@ -7,9 +7,11 @@ import { ROUTES } from '@/lib/routes';
 import { useChartShell } from '../_components/ChartShellClient';
 import { useVotingReleases } from '@/hooks/useVotingReleases';
 import { VotingAreaSkeleton } from '@/components/skeletons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function VotingPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { handleTrackClick, setHasVoted } = useChartShell();
   const { tracks, isLoading, error } = useVotingReleases();
 
@@ -20,7 +22,7 @@ export default function VotingPage() {
   if (error || tracks.length === 0) {
     return (
       <div className="p-8 text-center text-muted-foreground font-ui text-sm">
-        {error ?? 'Keine abstimmbaren Releases verfügbar.'}
+        {error ?? t('voting.noReleases')}
       </div>
     );
   }

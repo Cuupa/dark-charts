@@ -33,7 +33,7 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
   
   return (
     <li
-      className="cyber-card flex flex-col gap-3 p-4 border-b group overflow-hidden cursor-pointer"
+      className="relative flex flex-col gap-3 p-4 border-b border-border group overflow-hidden cursor-pointer hover:bg-primary/5 transition-colors"
       onClick={() => onClick?.(track)}
       role="button"
       tabIndex={0}
@@ -45,9 +45,7 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
         }
       }}
     >
-      <div className="cyber-scanline" />
-      
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary opacity-0 group-hover:opacity-100 instant-transition" />
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
       
       <div className="flex items-start gap-3 md:gap-4 relative z-10">
         <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
@@ -100,7 +98,7 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
 
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           <div>
-            <div className="cyber-hover-chromatic data-font text-base md:text-xl font-bold text-foreground truncate">
+            <div className="data-font text-base md:text-xl font-bold text-foreground truncate">
               <Link
                 href={`/release/${track.id}`}
                 onClick={(event) => event.stopPropagation()}

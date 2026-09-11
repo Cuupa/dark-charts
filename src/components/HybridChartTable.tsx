@@ -28,18 +28,27 @@ export function HybridChartTable({
   const { weekNumber, year } = getIsoWeekYear(new Date());
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="display-font text-2xl md:text-3xl text-foreground">
           {t('chart.hybridTitle')} — KW {weekNumber}/{year}
         </h1>
+        <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
+          {t('chart.whyThisWeekBody')}
+        </p>
         {weightsLabel && (
-          <p className="text-sm text-muted-foreground mt-1">{weightsLabel}</p>
+          <p className="text-sm text-muted-foreground">{weightsLabel}</p>
         )}
+        <Link
+          href={ROUTES.methodology}
+          className="inline-block text-sm text-primary hover:underline"
+        >
+          {t('chart.methodologyLink')} →
+        </Link>
       </div>
 
       <ErrorBoundary level="component">
-        <Card className="bg-card border border-border">
+        <Card className="bg-card border border-border overflow-hidden">
           {isLoading ? (
             <div>
               {Array.from({ length: 20 }).map((_, index) => (
@@ -70,17 +79,6 @@ export function HybridChartTable({
           )}
         </Card>
       </ErrorBoundary>
-
-      <div className="rounded-lg border border-border bg-card/50 p-4">
-        <h2 className="text-sm font-semibold">{t('chart.whyThisWeek')}</h2>
-        <p className="text-sm text-muted-foreground mt-1">{t('chart.whyThisWeekBody')}</p>
-        <Link
-          href={ROUTES.methodology}
-          className="inline-block mt-2 text-sm text-primary hover:underline"
-        >
-          {t('chart.methodologyLink')} →
-        </Link>
-      </div>
     </div>
   );
 }

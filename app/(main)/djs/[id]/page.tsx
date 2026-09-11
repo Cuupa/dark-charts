@@ -35,7 +35,7 @@ export default async function DjProfilePage({ params }: DjPageProps) {
   if (!expert) notFound();
 
   return (
-    <main id="main-content" className="mx-auto max-w-3xl space-y-6 px-4 py-8 md:px-8">
+    <div className="mx-auto max-w-3xl space-y-6">
       <p className="font-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
         {t('djs.role')}
       </p>
@@ -63,6 +63,6 @@ export default async function DjProfilePage({ params }: DjPageProps) {
           {t('djs.backToRanking')}
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

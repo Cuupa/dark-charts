@@ -53,32 +53,32 @@
 }
 
 :root {
-  --background: oklch(0.02 0 0);
-  --background-rgb: 16, 16, 16;
-  --foreground: #ffffff;
-  --card: #292929;
-  --card-foreground: #ffffff;
-  --popover: #292929;
-  --popover-foreground: #ffffff;
-  --primary: #493687;
+  --background: #0d0d1a;
+  --background-rgb: 13, 13, 26;
+  --foreground: #f3f0ff;
+  --card: #1a1a2e;
+  --card-foreground: #f3f0ff;
+  --popover: #1a1a2e;
+  --popover-foreground: #f3f0ff;
+  --primary: #6d28d9;
   --primary-foreground: #ffffff;
-  --secondary: #7e1e37;
+  --secondary: #9333ea;
   --secondary-foreground: #ffffff;
-  --muted: #292929;
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: #493687;
+  --muted: #1a1a2e;
+  --muted-foreground: oklch(0.72 0.02 300);
+  --accent: #6d28d9;
   --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
-  --border: #383838;
-  --input: #383838;
-  --ring: #493687;
+  --border: #2d2d4e;
+  --input: #2d2d4e;
+  --ring: #6d28d9;
   --radius: 0.25rem;
   --spacing: 0.25rem;
   --z-global-fx: 9996;
 
-  --font-family-body: var(--font-sans);
-  --font-family-heading: var(--font-sans);
+  --font-family-body: var(--font-exo2), var(--font-sans);
+  --font-family-heading: var(--font-orbitron), var(--font-sans);
   --font-serif: var(--font-family-body, Georgia, Cambria, 'Times New Roman', serif);
   --font-display: var(--font-family-heading, var(--font-sans));
   --font-ui: var(--font-family-body, var(--font-sans));
@@ -248,10 +248,10 @@
 }
 
 .display-font {
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .font-ui {

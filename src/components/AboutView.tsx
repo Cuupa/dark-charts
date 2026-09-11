@@ -21,7 +21,7 @@ export function AboutView() {
               <h2 className="font-ui text-lg uppercase tracking-[0.12em] font-bold text-foreground">
                 {t('about.mission')}
               </h2>
-              <p className="font-ui text-xs text-muted-foreground leading-relaxed">
+              <p className="font-ui text-sm text-muted-foreground leading-relaxed">
                 {t('about.missionText')}
               </p>
             </div>
@@ -37,7 +37,7 @@ export function AboutView() {
               <h2 className="font-ui text-lg uppercase tracking-[0.12em] font-bold text-foreground">
                 {t('about.noPayToPlay')}
               </h2>
-              <p className="font-ui text-xs text-muted-foreground leading-relaxed">
+              <p className="font-ui text-sm text-muted-foreground leading-relaxed">
                 {t('about.noPayToPlayText')}
               </p>
             </div>
@@ -63,7 +63,7 @@ export function AboutView() {
                   {t('about.fanCharts')}
                 </h3>
               </div>
-              <p className="font-ui text-xs text-muted-foreground leading-relaxed">
+              <p className="font-ui text-sm text-muted-foreground leading-relaxed">
                 {t('about.fanChartsText')}
               </p>
             </div>
@@ -77,7 +77,7 @@ export function AboutView() {
                   {t('about.clubCharts')}
                 </h3>
               </div>
-              <p className="font-ui text-xs text-muted-foreground leading-relaxed">
+              <p className="font-ui text-sm text-muted-foreground leading-relaxed">
                 {t('about.clubChartsText')}
               </p>
             </div>
@@ -92,7 +92,7 @@ export function AboutView() {
                 {t('about.overallCharts')}
               </h3>
             </div>
-            <p className="font-ui text-xs text-muted-foreground leading-relaxed">
+            <p className="font-ui text-sm text-muted-foreground leading-relaxed">
               {t('about.overallChartsText')}
             </p>
           </div>
@@ -101,7 +101,7 @@ export function AboutView() {
             <h3 className="font-ui text-sm uppercase tracking-[0.15em] font-bold text-accent mb-4">
               {t('about.principles')}
             </h3>
-            <ul className="space-y-2 font-ui text-xs text-muted-foreground">
+            <ul className="space-y-2 font-ui text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-0.5">•</span>
                 <span>{t('about.principle1')}</span>

@@ -26,10 +26,9 @@ export function ChartCategory({ title, tracks, isLoading, onTrackClick }: ChartC
   };
 
   return (
-    <section className="cyber-card overflow-hidden relative" aria-labelledby={`chart-title-${title.replace(/\s+/g, '-')}`}>
-      <div className="cyber-scanline" />
+    <section className="bg-card border border-border overflow-hidden relative" aria-labelledby={`chart-title-${title.replace(/\s+/g, '-')}`}>
       <div className="p-4 border-b border-border relative z-10">
-        <h2 id={`chart-title-${title.replace(/\s+/g, '-')}`} className="cyber-hover-chromatic display-font text-xl uppercase text-foreground tracking-tight font-semibold">{title}</h2>
+        <h2 id={`chart-title-${title.replace(/\s+/g, '-')}`} className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">{title}</h2>
       </div>
       <ul className="relative z-10 space-y-2 p-4" role="list">
         {topThree.map((track, index) => {
@@ -40,7 +39,7 @@ export function ChartCategory({ title, tracks, isLoading, onTrackClick }: ChartC
           return (
             <li
               key={track.id}
-              className="cyber-card flex items-start gap-3 p-3 cursor-pointer group hover:border-primary/50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="relative flex items-start gap-3 p-3 cursor-pointer group border border-transparent hover:border-primary/50 hover:bg-primary/5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               onClick={() => onTrackClick?.(track)}
               role="button"
               tabIndex={0}
@@ -52,9 +51,7 @@ export function ChartCategory({ title, tracks, isLoading, onTrackClick }: ChartC
                 }
               }}
             >
-              <div className="cyber-scanline opacity-50" />
-              
-              <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary opacity-0 group-hover:opacity-100 instant-transition" />
+              <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               
               <div className="flex items-center gap-2 flex-shrink-0 relative z-10">
                 {trendDirection && (

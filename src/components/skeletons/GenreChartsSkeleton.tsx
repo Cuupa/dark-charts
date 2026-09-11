@@ -4,8 +4,7 @@ import { ChartEntrySkeleton } from './ChartEntrySkeleton';
 export function GenreChartsSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="cyber-card">
-        <div className="cyber-scanline" />
+      <div className="bg-card border border-border">
         <div className="p-4 border-b border-border relative z-10">
           <Skeleton className="h-6 w-48 bg-zinc-800/80 animate-pulse" />
         </div>

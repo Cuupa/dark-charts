@@ -24,16 +24,6 @@ import { safeFilter, safeFindIndex, safeSlice } from '@/lib/safe-utils';
 import { mainGenreMap } from '@/lib/config/genres';
 import { navigateToChart } from '@/lib/routes';
 import { useChartData } from '@/hooks/useChartData';
-import { DataSourceBanner } from '@/components/DataSourceBanner';
-import { PromotionalSlot } from '@/components/PromotionalSlot';
-
-function shouldShowSpotlight(pathname: string): boolean {
-  if (pathname.startsWith('/voting')) return false;
-  if (pathname.startsWith('/profile')) return false;
-  if (pathname.startsWith('/admin')) return false;
-  if (pathname.startsWith('/oauth')) return false;
-  return true;
-}
 
 export interface ChartShellContextValue {
   fanCharts: Track[];
@@ -328,22 +318,16 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
 
   return (
     <ChartShellContext.Provider value={value}>
-      <DataSourceBanner />
-      {activePromotion && shouldShowSpotlight(pathname) && (
-        <PromotionalSlot
-          type={activePromotion.type}
-          name={activePromotion.name}
-          imageUrl={activePromotion.imageUrl}
-        />
-      )}
       {children}
       <ErrorBoundary level="component">
-        <MusicPlayer
-          currentTrack={currentTrack}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-          allTracks={[...(fanCharts || []), ...(expertCharts || [])]}
-        />
+        {pathname.startsWith('/voting') ? null : (
+          <MusicPlayer
+            currentTrack={currentTrack}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            allTracks={[...(fanCharts || []), ...(expertCharts || [])]}
+          />
+        )}
       </ErrorBoundary>
       <ErrorBoundary level="component">
         <TrackDetailModal

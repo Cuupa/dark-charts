@@ -9,10 +9,9 @@ export function ChartEntrySkeleton({ index = 0 }: ChartEntrySkeletonProps) {
 
   return (
     <div 
-      className="cyber-card flex flex-col gap-3 p-4 border-b overflow-hidden"
+      className="relative flex flex-col gap-3 p-4 border-b border-border overflow-hidden"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="cyber-scanline" />
       
       <div className="flex items-center gap-4 relative z-10">
         <div className="flex items-center gap-3 min-w-[100px]">

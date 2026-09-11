@@ -38,7 +38,7 @@ export function VerifyEmailClient() {
   }, [token]);
 
   return (
-    <div className="max-w-lg mx-auto py-16 px-4">
+    <div className="max-w-lg mx-auto">
       <Card className="p-8 text-center space-y-4 border border-border bg-card">
         <h1 className="display-font text-2xl uppercase text-foreground font-semibold">
           E-Mail-Verifizierung

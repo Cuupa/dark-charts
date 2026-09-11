@@ -18,12 +18,8 @@ export default function PillarChartPage({ params }: PillarPageProps) {
   }
 
   return (
-    <main id="main-content" className="w-full px-4 md:px-8 py-8">
-      <div className="mx-auto max-w-5xl">
-        <ErrorBoundary level="component">
-          <PillarChartList pillar={pillar} />
-        </ErrorBoundary>
-      </div>
-    </main>
+    <ErrorBoundary level="component">
+      <PillarChartList pillar={pillar} />
+    </ErrorBoundary>
   );
 }

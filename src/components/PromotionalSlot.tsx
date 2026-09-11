@@ -16,7 +16,7 @@ export function PromotionalSlot({ type = 'Band of the Day', name = 'Promoted Art
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden cyber-card border-accent bg-accent/5 p-6 mb-8 group"
+      className="relative overflow-hidden border border-accent bg-accent/5 p-6 group"
     >
       <div className="absolute top-2 right-2">
         <div className="bg-background/80 backdrop-blur-sm border border-accent/50 px-2 py-1 rounded text-[10px] font-ui uppercase tracking-widest text-accent flex items-center gap-1.5">
