@@ -1,12 +1,16 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { ChartHistoryView } from '@/components/ChartHistoryView';
+import { ChartArchiveView } from '@/components/ChartArchiveView';
 
 export default function HistoryPage() {
   return (
-    <ErrorBoundary level="component">
-      <ChartHistoryView />
-    </ErrorBoundary>
+    <main id="main-content" className="space-y-8">
+      <ErrorBoundary level="component">
+        <ChartArchiveView />
+      </ErrorBoundary>
+    </main>
   );
 }

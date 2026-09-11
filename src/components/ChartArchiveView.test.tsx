@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import {
   ChartArchiveView,
   isoWeekToMondayClient,
@@ -9,6 +10,14 @@ import {
   getAdjacentWeek,
   isCurrentOrFutureWeek,
 } from './ChartArchiveView';
+
+function renderArchive() {
+  return render(
+    <LanguageProvider>
+      <ChartArchiveView />
+    </LanguageProvider>
+  );
+}
 
 // ---- Global mocks ----
 
@@ -172,7 +181,7 @@ describe('ChartArchiveView', () => {
   describe('loading state', () => {
     it('renders 10 skeleton wrappers while fetch is pending', () => {
       mockPendingFetch();
-      render(<ChartArchiveView />);
+      renderArchive();
       const skeletons = screen.getAllByTestId('archive-loading');
       expect(skeletons).toHaveLength(10);
     });
@@ -181,7 +190,7 @@ describe('ChartArchiveView', () => {
   describe('loaded state', () => {
     it('renders artist names and placements after fetch resolves', async () => {
       mockSuccessResponse();
-      render(<ChartArchiveView />);
+      renderArchive();
       await waitFor(() => {
         expect(screen.getByText('Artist 1')).toBeDefined();
       }, { timeout: 2000 });
@@ -190,7 +199,7 @@ describe('ChartArchiveView', () => {
 
     it('renders track titles', async () => {
       mockSuccessResponse();
-      render(<ChartArchiveView />);
+      renderArchive();
       await waitFor(() => {
         expect(screen.getByText('Track 1')).toBeDefined();
       }, { timeout: 2000 });
@@ -198,7 +207,7 @@ describe('ChartArchiveView', () => {
 
     it('does NOT render any voting buttons', async () => {
       mockSuccessResponse();
-      render(<ChartArchiveView />);
+      renderArchive();
       await waitFor(() => {
         expect(screen.queryByText(/Artist 1/)).toBeDefined();
       }, { timeout: 2000 });
@@ -213,9 +222,9 @@ describe('ChartArchiveView', () => {
         ok: true,
         json: async () => ({ success: true, year: 2025, week: 14, weekStart: '2025-03-31T00:00:00.000Z', entries: [], count: 0 }),
       });
-      render(<ChartArchiveView />);
+      renderArchive();
       await waitFor(() =>
-        expect(screen.getByText(/no chart entries found/i)).toBeDefined()
+        expect(screen.getByText(/keine liste für diese woche/i)).toBeDefined()
       );
     });
   });
@@ -223,14 +232,14 @@ describe('ChartArchiveView', () => {
   describe('navigation', () => {
     it('renders Prev Week button with accessible label', async () => {
       mockSuccessResponse();
-      render(<ChartArchiveView />);
-      expect(screen.getByRole('button', { name: /previous week/i })).toBeDefined();
+      renderArchive();
+      expect(screen.getByRole('button', { name: /vorherige woche/i })).toBeDefined();
     });
 
     it('renders Next Week button with accessible label', async () => {
       mockSuccessResponse();
-      render(<ChartArchiveView />);
-      expect(screen.getByRole('button', { name: /next week/i })).toBeDefined();
+      renderArchive();
+      expect(screen.getByRole('button', { name: /nächste woche/i })).toBeDefined();
     });
 
     it('Next Week button is disabled when viewing the last completed week (week 14)', async () => {
@@ -241,9 +250,9 @@ describe('ChartArchiveView', () => {
         configurable: true,
       });
       mockSuccessResponse();
-      render(<ChartArchiveView />);
-      await waitFor(() => screen.getByRole('button', { name: /next week/i }));
-      const nextBtn = screen.getByRole('button', { name: /next week/i });
+      renderArchive();
+      await waitFor(() => screen.getByRole('button', { name: /nächste woche/i }));
+      const nextBtn = screen.getByRole('button', { name: /nächste woche/i });
       expect(nextBtn).toHaveProperty('disabled', true);
     });
 
@@ -256,10 +265,10 @@ describe('ChartArchiveView', () => {
       mockSuccessResponse();
       // Also mock the subsequent fetch after navigation
       mockSuccessResponse([makeEntry(1)]);
-      render(<ChartArchiveView />);
-      await waitFor(() => screen.getByRole('button', { name: /previous week/i }));
+      renderArchive();
+      await waitFor(() => screen.getByRole('button', { name: /vorherige woche/i }));
 
-      fireEvent.click(screen.getByRole('button', { name: /previous week/i }));
+      fireEvent.click(screen.getByRole('button', { name: /vorherige woche/i }));
 
       expect(mockPushState).toHaveBeenCalledWith(
         {},
@@ -280,7 +289,7 @@ describe('ChartArchiveView', () => {
         ok: true,
         json: async () => ({ success: true, year: 2025, week: 12, weekStart: '2025-03-17T00:00:00.000Z', entries: [], count: 0 }),
       });
-      render(<ChartArchiveView />);
+      renderArchive();
       await waitFor(() =>
         expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('year=2025&week=12'))
       );
@@ -289,7 +298,7 @@ describe('ChartArchiveView', () => {
     it('falls back to last completed week when no params are present', async () => {
       // location.search = '' (set in beforeEach)
       mockSuccessResponse();
-      render(<ChartArchiveView />);
+      renderArchive();
       await waitFor(() =>
         // Last completed = week 14 of 2025
         expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('year=2025&week=14'))

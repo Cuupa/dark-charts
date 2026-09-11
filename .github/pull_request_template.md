@@ -17,7 +17,7 @@ Describe what this PR does (1–2 sentences):
 
 - [ ] App routes (`app/*`, not API)
 - [ ] API routes (`app/api/*`)
-- [ ] Database schema (`supabase/reset.sql`, `supabase/migrations/*`, `src/types/database.ts`)
+- [ ] Database schema (`supabase/reset.sql`, `src/types/database.ts` — no migration files)
 - [ ] Components (`src/components/*`)
 - [ ] Lib / DAL / math (`src/lib/*`, `src/backend/*`)
 - [ ] Tests (`src/**/*.test.*`)

@@ -8,13 +8,12 @@ This document defines the **permanent, non-negotiable** structural requirements 
 
 | Artefact | Purpose |
 |---|---|
-| `supabase/reset.sql` | Full idempotent schema bootstrap: table definitions, column additions, RLS policies, triggers, seed data, enums. |
-| `supabase/migrations/*.sql` | Incremental SQL for **existing** databases (named `YYYYMMDD_<slug>.sql`). Apply in order. |
+| `supabase/reset.sql` | **The only SQL file.** Full idempotent schema: tables, columns, RLS, triggers, indexes, functions. |
 | `src/types/database.ts` | TypeScript mirror of the schema. Keep in sync after every change. |
 
-- `reset.sql` is the **fresh-install** source of truth.
-- An existing DB gets the bootstrap once, then **only** new migrations.
-- A change that alters the schema lands in **both** places: the `CREATE TABLE` definition (or `ALTER … ADD COLUMN IF NOT EXISTS`) in `reset.sql` **and** a new migration file.
+- ⛔ **No `supabase/migrations/`.** Do not add incremental migration files.
+- `reset.sql` is safe on a fresh database **and** an existing one. Existing DBs are updated by re-running `reset.sql`.
+- A schema change lands **only** in `reset.sql` (CREATE / `ADD COLUMN IF NOT EXISTS`) **and** `src/types/database.ts`.
 
 ---
 
@@ -36,11 +35,9 @@ Every statement in `reset.sql` must be safe to run on a fresh database **and** a
 | Columns | `ALTER TABLE … ADD COLUMN IF NOT EXISTS` |
 | Indexes | `CREATE INDEX IF NOT EXISTS` |
 | Triggers | `DROP TRIGGER IF EXISTS` then `CREATE TRIGGER` |
-| Policies | `DROP POLICY IF EXISTS` then `CREATE POLICY` |
+| Policies | `DROP POLICY IF EXISTS` / `IF NOT EXISTS` then `CREATE POLICY` |
 | Enum types | `DO $$ BEGIN CREATE TYPE … EXCEPTION WHEN duplicate_object … END $$` |
 | Functions | `CREATE OR REPLACE FUNCTION` |
-
-(New **migrations** may assume they run once in order on an existing DB, but keep them additive and non-breaking where possible.)
 
 ---
 
@@ -59,11 +56,11 @@ Every statement in `reset.sql` must be safe to run on a fresh database **and** a
 |---|---|
 | `users` | Supabase-linked account + role (`FAN`/`DJ`/`BAND`/`LABEL`/`ADMIN`) |
 | `artists`, `releases` | Catalog |
-| `votes`, `expert_votes` | Fan + expert voting |
+| `votes`, `expert_votes` | Fan + expert voting (unique per voter + release + `weekStart`) |
 | `streaming_snapshots`, `user_listening_snapshots` | Streaming + loyalty input |
 | `chart_entries` | Aggregated output for public chart reads |
 | `vote_anomalies` | Aggregation anomaly detection |
-| `fan_profiles`, `dj_profiles`, `band_profiles`, `label_profiles` | Role profiles |
+| `fan_profiles`, `dj_profiles`, `band_profiles`, `label_profiles` | Role profiles (`band_profiles.artistId` nullable until claimed) |
 | `sync_queue`, `sync_logs` | Durable catalog sync |
 | `bookings` | Spotlight (Stripe) bookings |
 | `badges`, `user_badges` | Gamification |
@@ -96,10 +93,9 @@ Every statement in `reset.sql` must be safe to run on a fresh database **and** a
 
 Before committing any schema change, verify:
 
-- [ ] Added to `supabase/reset.sql` (CREATE or `ADD COLUMN IF NOT EXISTS`)
-- [ ] A `supabase/migrations/YYYYMMDD_<slug>.sql` migration added for existing DBs
+- [ ] Added to `supabase/reset.sql` only (CREATE or `ADD COLUMN IF NOT EXISTS`) — **no new migration file**
 - [ ] `src/types/database.ts` updated (Row / Insert / Update shapes)
 - [ ] No 3NF violations introduced (§ 2)
 - [ ] RLS enabled and policies defined for the new table
 - [ ] Index created for every FK and high-cardinality filter column
-- [ ] `npm run lint`, `npx tsc --noEmit`, `npm test` pass
+- [ ] `npx tsc --noEmit`, `npm test` pass

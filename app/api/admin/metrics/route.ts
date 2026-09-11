@@ -30,11 +30,11 @@ export const GET = withAdminAuth(async () => {
     supabase
       .from('votes')
       .select('*', { count: 'exact', head: true })
-      .gte('createdAt', weekStart.toISOString()),
+      .eq('weekStart', weekStart.toISOString()),
     supabase
       .from('expert_votes')
       .select('*', { count: 'exact', head: true })
-      .gte('createdAt', weekStart.toISOString()),
+      .eq('weekStart', weekStart.toISOString()),
     supabase
       .from('audit_logs')
       .select('*, admin:users(email)')

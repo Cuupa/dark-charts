@@ -21,8 +21,24 @@
   ],
   "crons": [
     {
+      "path": "/api/cron/streaming-snapshots",
+      "schedule": "0 22 * * 0"
+    },
+    {
       "path": "/api/cron/aggregate-charts",
       "schedule": "55 23 * * 0"
+    },
+    {
+      "path": "/api/cron/reset-credits",
+      "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/cron/evaluate-badges",
+      "schedule": "15 0 * * 1"
+    },
+    {
+      "path": "/api/cron/purge-inactive",
+      "schedule": "30 5 * * 1"
     },
     {
       "path": "/api/cron/sync-itunes-artwork",

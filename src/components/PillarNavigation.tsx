@@ -55,6 +55,7 @@ export function PillarNavigation({
     { value: 'overview', label: t('pillar.overall') },
     { value: 'club', label: t('pillar.club') },
     { value: 'fan', label: t('pillar.fan') },
+    { value: 'streaming', label: t('pillar.streaming') },
   ];
 
   return (

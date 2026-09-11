@@ -12,7 +12,7 @@ export const GET = withAdminAuth(async (req) => {
   const { data: users, error } = await supabase
     .from('users')
     .select(
-      'id, email, role, isSuspended, createdAt, fanProfile:fan_profiles(nickname, remainingCredits), djProfile:dj_profiles(expertStatus, reputationScore)'
+      'id, email, role, isSuspended, createdAt, fanProfile:fan_profiles(nickname, remainingCredits), djProfile:dj_profiles(expertStatus, expertRequested, reputationScore)'
     )
     .order('createdAt', { ascending: false })
     .range(skip, skip + limit - 1);
@@ -92,7 +92,11 @@ export const POST = withAdminAuth(async (req, adminId) => {
     }
     const { data, error } = await supabase
       .from('dj_profiles')
-      .update({ expertStatus, updatedAt: new Date().toISOString() })
+      .update({
+        expertStatus,
+        ...(expertStatus ? { expertRequested: false } : {}),
+        updatedAt: new Date().toISOString(),
+      })
       .eq('userId', userId)
       .select()
       .single();

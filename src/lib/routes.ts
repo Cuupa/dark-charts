@@ -15,6 +15,9 @@ export const ROUTES = {
   terms: '/terms',
   imprint: '/imprint',
   methodology: '/methodology',
+  spotlight: '/spotlight',
+  search: '/search',
+  djs: '/djs',
   admin: '/admin',
   adminAnalytics: '/admin/analytics',
   adminMetrics: '/admin/metrics',
@@ -46,9 +49,17 @@ const SLUG_TO_MAIN_GENRE = Object.fromEntries(
 ) as Record<string, MainGenre>;
 
 /** Public chart mode slugs (URL). `club` maps to expert data internally. */
-export type PillarSlug = 'fan' | 'club';
+export type PillarSlug = 'fan' | 'club' | 'streaming';
 
-const PILLAR_SLUGS: PillarSlug[] = ['fan', 'club'];
+const PILLAR_SLUGS: PillarSlug[] = ['fan', 'club', 'streaming'];
+
+export function artistPath(id: string): string {
+  return `/artist/${id}`;
+}
+
+export function releasePath(id: string): string {
+  return `/release/${id}`;
+}
 
 export function slugify(value: string): string {
   return value
@@ -79,7 +90,7 @@ export function slugToSubGenre(slug: string, mainGenre?: MainGenre): Genre | nul
 
 export function pillarChartPath(pillar: PillarSlug | ChartType): string {
   if (pillar === 'expert') return '/charts/club';
-  if (pillar === 'streaming' || pillar === 'overall') return ROUTES.home;
+  if (pillar === 'overall') return ROUTES.home;
   return `/charts/${pillar}`;
 }
 
@@ -89,7 +100,9 @@ export function isValidPillarSlug(slug: string): slug is PillarSlug {
 
 /** Map URL pillar slug to underlying chart data type */
 export function pillarSlugToChartType(slug: PillarSlug): ChartType {
-  return slug === 'club' ? 'expert' : 'fan';
+  if (slug === 'club') return 'expert';
+  if (slug === 'streaming') return 'streaming';
+  return 'fan';
 }
 
 export function mainGenrePath(mainGenre: MainGenre, subGenre?: Genre): string {
@@ -115,6 +128,8 @@ export function viewToPath(view: ViewType): string {
       return ROUTES.customCharts;
     case 'about':
       return ROUTES.about;
+    case 'search':
+      return ROUTES.search;
     case 'oauth-callback':
       return ROUTES.oauthCallback;
     case 'privacy':
@@ -158,6 +173,7 @@ export function pathToView(pathname: string): ViewType | null {
     [ROUTES.profile]: 'profile',
     [ROUTES.customCharts]: 'custom-charts',
     [ROUTES.about]: 'about',
+    [ROUTES.search]: 'search',
     [ROUTES.oauthCallback]: 'oauth-callback',
     [ROUTES.privacy]: 'privacy',
     [ROUTES.terms]: 'terms',
@@ -203,6 +219,7 @@ export function navigateToChart(
 
 export const NAV_ITEMS: { view: ViewType; href: string; labelKey: string; fallback: string }[] = [
   { view: 'home', href: ROUTES.home, labelKey: 'nav.home', fallback: 'Charts' },
+  { view: 'search', href: ROUTES.search, labelKey: 'nav.search', fallback: 'Search' },
   { view: 'custom-charts', href: ROUTES.customCharts, labelKey: 'nav.custom', fallback: 'Custom' },
   { view: 'voting', href: ROUTES.voting, labelKey: 'nav.voting', fallback: 'Vote' },
   { view: 'history', href: ROUTES.history, labelKey: 'nav.history', fallback: 'History' },

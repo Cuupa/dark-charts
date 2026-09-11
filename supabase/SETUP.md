@@ -14,24 +14,14 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT USAGE, CREATE ON SCHEMA public TO authenticated, anon, service_role;
 ```
 
-## Fresh install (new project / empty DB)
+## Install or update (always `reset.sql`)
 
-1. **Bootstrap**: paste the entire contents of `supabase/reset.sql` into Supabase Dashboard → SQL Editor → **Run**.
-2. `reset.sql` is fully idempotent — re-running is safe (tables `IF NOT EXISTS`, columns `ADD COLUMN IF NOT EXISTS`, `DROP POLICY/TRIGGER IF EXISTS` + recreate).
+There is **one** SQL artefact: `supabase/reset.sql`. It is fully idempotent.
 
-## Existing database (already bootstrapped)
+1. Paste the entire contents of `supabase/reset.sql` into Supabase Dashboard → SQL Editor → **Run**.
+2. Re-running is the supported way to apply schema changes to an **existing** database (`IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `DROP POLICY/TRIGGER IF EXISTS` + recreate).
 
-Apply incremental migrations in order under `supabase/migrations/` — each file is `YYYYMMDD_<slug>.sql`. Run each in the SQL Editor (or via a migration runner) top-to-bottom:
-
-```bash
-# examples (names from the current tree)
-supabase/migrations/20260629_spotlight_stripe_columns.sql
-supabase/migrations/20260630_admin_settings_extensions.sql
-supabase/migrations/20260630_supabase_auth_migration.sql
-supabase/migrations/20260807_durable_sync_queue.sql
-```
-
-> Migrations assume the bootstrap is present. Do **not** run them against a blank DB, and do not re-run `reset.sql` on a DB that has already been migrated (it is the fresh-install source of truth; on an existing DB use migrations only).
+⛔ Do not add files under `supabase/migrations/`.
 
 ## Auth
 
@@ -47,7 +37,7 @@ supabase/migrations/20260807_durable_sync_queue.sql
 
 ### Error: "relation does not exist"
 
-**Solution:** Ensure you're running the complete `reset.sql` (fresh install) or the correct ordered migrations (existing DB) — not a partial snippet.
+**Solution:** Run the complete `reset.sql`, not a partial snippet.
 
 ### Error: "syntax error at or near NOT"
 

@@ -2,11 +2,12 @@
 
 ## Single source of truth
 
-- SQL bootstrap: `supabase/reset.sql` (full, idempotent)
-- Incremental SQL: `supabase/migrations/*.sql` (apply on existing DBs)
+- SQL: **`supabase/reset.sql` only** — full, idempotent schema. Re-run is always safe.
 - Types: `src/types/database.ts` (mirror of the schema — keep in sync after every change)
 
-Keep the three in sync. Schema change checklist: see [supabase/DB_REQUIREMENTS.md](../supabase/DB_REQUIREMENTS.md) and [supabase/SETUP.md](../supabase/SETUP.md).
+⛔ **No `supabase/migrations/`.** Incremental migration files are forbidden. Every schema change lands as `CREATE … IF NOT EXISTS` / `ALTER … ADD COLUMN IF NOT EXISTS` / `DROP … IF EXISTS` in `reset.sql`.
+
+Schema change checklist: [supabase/DB_REQUIREMENTS.md](../../supabase/DB_REQUIREMENTS.md) and [supabase/SETUP.md](../../supabase/SETUP.md).
 
 ## Supabase clients
 
@@ -25,7 +26,11 @@ Pass `AppSupabaseClient` as the first argument. `.single()` returning `PGRST116`
 
 ## Chart data
 
-`chart_entries` (aggregated) serve public chart reads via `src/lib/api/charts.ts`. Voting/bulk writes go through `src/lib/api/fan-vote.ts` and `src/lib/api/votes.ts`. Vote anomalies/conflicts in `src/lib/vote-anomaly.ts`, `src/lib/vote-conflicts.ts`.
+`chart_entries` (aggregated) serve public chart reads via `src/lib/api/charts.ts`. Voting/bulk writes go through `src/lib/api/fan-vote.ts` and `src/lib/api/votes.ts`. Fan/expert ballots are unique per `(voter, release, weekStart)`. Vote anomalies/conflicts in `src/lib/vote-anomaly.ts`, `src/lib/vote-conflicts.ts`. Eligible voting catalog: last 12 months (`src/lib/voting-eligibility.ts`). Credit reset: `src/lib/api/fan-credits.ts`. Account purge: `src/lib/api/account-purge.ts` (self-serve delete + 24-month inactivity cron). Weekly fan badges: `src/lib/badges/weekly-fan-badges.ts`.
+
+## Public catalog
+
+Shareable artist/release pages (`/artist/[id]`, `/release/[id]`) and `/search` read visible rows only via `src/lib/api/public-catalog.ts`. Band claiming: `POST /api/band/claim` sets `band_profiles.artistId` (nullable until claimed; unique when set).
 
 ## Catalog sync (durable)
 

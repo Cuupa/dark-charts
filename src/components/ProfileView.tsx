@@ -17,6 +17,9 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { OAuthLoginButtons } from '@/components/OAuthLoginButtons';
+import { BandClaimCard } from '@/components/BandClaimCard';
+import { LabelRosterCard } from '@/components/LabelRosterCard';
+import { DjExpertCard } from '@/components/DjExpertCard';
 import { oauthService } from '@/services/oauthService';
 import { ProfileStatsSkeleton, ProfileActivitySkeleton } from '@/components/skeletons';
 
@@ -478,6 +481,9 @@ function BandLabelProfileView({ userType }: { userType: 'band' | 'label' }) {
         </div>
       </Card>
 
+      {userType === 'band' ? <BandClaimCard /> : null}
+      {userType === 'label' ? <LabelRosterCard /> : null}
+
       <Card className="bg-card border border-border p-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 border border-accent bg-accent/10 flex items-center justify-center shrink-0">
@@ -536,13 +542,20 @@ export function ProfileView() {
           authProvider={user.authProvider}
           trustLevel={user.trustLevel}
         />
+      ) : user.profile?.userType === 'dj' ? (
+        <DjExpertCard
+          expertStatus={(user.profile as DJProfile).expertStatus}
+          expertRequested={(user.profile as DJProfile).expertRequested}
+          reputationScore={(user.profile as DJProfile).reputation}
+          displayName={(user.profile as DJProfile).username}
+        />
       ) : user.profile?.userType === 'band' || user.profile?.userType === 'label' ? (
         <BandLabelProfileView userType={user.profile.userType} />
       ) : (
         <Card className="bg-card border border-border p-8">
           <div className="text-center">
             <p className="font-ui text-sm uppercase tracking-[0.2em] text-muted-foreground">
-              {t('profile.profileType')}: {user.profile?.userType || 'Unknown'}
+              {t('profile.profileType')}: Unknown
             </p>
             <p className="font-ui text-xs text-muted-foreground mt-4">
               {t('profile.comingSoon')}

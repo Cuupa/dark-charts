@@ -13,8 +13,7 @@ Crons and API security headers are defined in `vercel.json`.
 ## 2. Database (Supabase)
 
 1. Create a **dedicated** Supabase project for dark-charts (do **not** share the darktunes DB).
-2. Fresh install: run `supabase/reset.sql` in the SQL Editor.
-3. Existing DB: apply migrations in order under `supabase/migrations/` (incl. `20260807_durable_sync_queue.sql`).
+2. Run `supabase/reset.sql` in the SQL Editor (idempotent — same file for fresh and existing DBs).
 4. Enable Email auth; set Site URL + redirect URLs to `NEXT_PUBLIC_APP_URL`.
 
 ## 3. Required environment variables
@@ -62,7 +61,11 @@ Register in Stripe Dashboard:
 | `*/10 * * * *` | `/api/sync` | Drain durable `sync_queue` (iTunes → releases + R2) |
 | `0 3 * * 1` | `/api/sync/queue` | Weekly enqueue of all visible artists |
 | `0 4 * * *` | `/api/cron/sync-itunes-artwork` | Backfill missing R2 covers |
-| `55 23 * * 0` | `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection |
+| `0 22 * * 0` | `/api/cron/streaming-snapshots` | Spotify/YouTube popularity snapshots for the current ISO week |
+| `55 23 * * 0` | `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection + credit reset |
+| `0 0 * * 1` | `/api/cron/reset-credits` | Monday fan credit refresh (runs even if Sunday aggregation failed) |
+| `15 0 * * 1` | `/api/cron/evaluate-badges` | Award weekly fan badges for the completed ISO week |
+| `30 5 * * 1` | `/api/cron/purge-inactive` | Delete non-admin accounts with no activity for 24 months |
 
 Vercel sends `Authorization: Bearer <CRON_SECRET>` automatically.
 

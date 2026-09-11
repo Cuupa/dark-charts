@@ -96,8 +96,10 @@ export type Database = {
           id: string
           userId: string
           bio: string | null
+          displayName: string | null
           soundcloudLink: string | null
           expertStatus: boolean
+          expertRequested: boolean
           reputationScore: number
           createdAt: string
           updatedAt: string
@@ -106,8 +108,10 @@ export type Database = {
           id?: string
           userId: string
           bio?: string | null
+          displayName?: string | null
           soundcloudLink?: string | null
           expertStatus?: boolean
+          expertRequested?: boolean
           reputationScore?: number
           createdAt?: string
           updatedAt?: string
@@ -116,8 +120,10 @@ export type Database = {
           id?: string
           userId?: string
           bio?: string | null
+          displayName?: string | null
           soundcloudLink?: string | null
           expertStatus?: boolean
+          expertRequested?: boolean
           reputationScore?: number
           createdAt?: string
           updatedAt?: string
@@ -127,7 +133,7 @@ export type Database = {
         Row: {
           id: string
           userId: string
-          artistId: string
+          artistId: string | null
           members: string[]
           createdAt: string
           updatedAt: string
@@ -135,7 +141,7 @@ export type Database = {
         Insert: {
           id?: string
           userId: string
-          artistId: string
+          artistId?: string | null
           members?: string[]
           createdAt?: string
           updatedAt?: string
@@ -143,7 +149,7 @@ export type Database = {
         Update: {
           id?: string
           userId?: string
-          artistId?: string
+          artistId?: string | null
           members?: string[]
           createdAt?: string
           updatedAt?: string
@@ -476,6 +482,7 @@ export type Database = {
           votes: number
           allocatedVotes: number
           cost: number
+          weekStart: string
           createdAt: string
         }
         Insert: {
@@ -486,6 +493,7 @@ export type Database = {
           votes: number
           allocatedVotes?: number
           cost?: number
+          weekStart: string
           createdAt?: string
         }
         Update: {
@@ -496,6 +504,7 @@ export type Database = {
           votes?: number
           allocatedVotes?: number
           cost?: number
+          weekStart?: string
           createdAt?: string
         }
       }
@@ -506,6 +515,7 @@ export type Database = {
           releaseId: string
           rating: number
           rank: number
+          weekStart: string
           createdAt: string
         }
         Insert: {
@@ -514,6 +524,7 @@ export type Database = {
           releaseId: string
           rating: number
           rank?: number
+          weekStart: string
           createdAt?: string
         }
         Update: {
@@ -522,6 +533,7 @@ export type Database = {
           releaseId?: string
           rating?: number
           rank?: number
+          weekStart?: string
           createdAt?: string
         }
       }

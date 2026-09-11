@@ -11,7 +11,7 @@ interface AdminUser {
   role: string;
   isSuspended?: boolean;
   fanProfile?: { nickname?: string; remainingCredits?: number };
-  djProfile?: { expertStatus?: boolean; reputationScore?: number };
+  djProfile?: { expertStatus?: boolean; expertRequested?: boolean; reputationScore?: number };
 }
 
 interface UserManagementViewProps {
@@ -75,6 +75,7 @@ export function UserManagementView({
           {users?.map(user => {
             const isDj = user.role === 'DJ';
             const expertStatus = user.djProfile?.expertStatus ?? false;
+            const expertRequested = user.djProfile?.expertRequested ?? false;
             const reputation = user.djProfile?.reputationScore ?? 1;
 
             return (
@@ -94,7 +95,7 @@ export function UserManagementView({
                     )}
                     {isDj && (
                       <Badge variant={expertStatus ? 'default' : 'outline'}>
-                        {expertStatus ? 'Expert' : 'No Expert'}
+                        {expertStatus ? 'Expert' : expertRequested ? 'Requested' : 'No Expert'}
                       </Badge>
                     )}
                     {user.fanProfile && (

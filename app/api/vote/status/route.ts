@@ -43,8 +43,8 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   const { count, error } = await supabase
     .from('votes')
     .select('*', { count: 'exact', head: true })
-    .eq('fanId', fanProfile.id)
-    .gte('createdAt', weekStart.toISOString());
+      .eq('fanId', fanProfile.id)
+      .eq('weekStart', weekStart.toISOString());
 
   if (error) throw new ApiError(500, error.message);
 

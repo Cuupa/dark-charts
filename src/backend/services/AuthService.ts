@@ -455,7 +455,7 @@ export class AuthService {
           bio: profileData?.bio ?? null,
           soundcloudLink: profileData?.soundcloudLink ?? null,
           expertStatus: false,
-          reputationScore: 0,
+          reputationScore: 1,
         })
         if (error) {
           throw new Error(error.message)
@@ -464,12 +464,9 @@ export class AuthService {
       }
 
       case 'BAND': {
-        if (!profileData?.artistId) {
-          throw new Error('Artist ID is required for band profiles')
-        }
         const { error } = await supabase.from('band_profiles').insert({
           userId,
-          artistId: profileData.artistId,
+          artistId: profileData?.artistId ?? null,
           members: [],
         })
         if (error) {

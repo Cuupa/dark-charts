@@ -13,6 +13,7 @@ import {
   Users,
   List,
   VinylRecord,
+  MagnifyingGlass,
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -27,6 +28,7 @@ function isNavActive(pathname: string, href: string): boolean {
 
 const NAV_ICONS = {
   home: ChartLine,
+  search: MagnifyingGlass,
   'custom-charts': Sliders,
   voting: ChartBar,
   history: ClockCounterClockwise,
@@ -41,7 +43,7 @@ export function SiteHeader() {
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,
     icon: NAV_ICONS[item.view as keyof typeof NAV_ICONS] ?? ChartLine,
-    label: t(item.labelKey) || item.fallback,
+    label: t(item.labelKey),
   }));
 
   const navLinkClass = (active: boolean) =>
@@ -59,7 +61,7 @@ export function SiteHeader() {
           <Link
             href={ROUTES.home}
             className="flex items-center gap-3 shrink-0 focus-visible:ring-2 focus-visible:ring-ring outline-none group"
-            aria-label="Dark Charts - Home"
+            aria-label={t('a11y.home')}
           >
             <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center text-primary-foreground transition-transform group-hover:scale-105">
               <VinylRecord size={22} weight="fill" />
@@ -67,7 +69,7 @@ export function SiteHeader() {
             <span className="hidden sm:inline text-sm font-bold tracking-wide">Dark Charts</span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Primary navigation">
+          <nav className="hidden lg:flex items-center gap-1" aria-label={t('a11y.nav')}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isNavActive(pathname, item.href);
@@ -86,7 +88,7 @@ export function SiteHeader() {
               size="sm"
               onClick={() => setLanguage(language === 'de' ? 'en' : 'de')}
               className="ml-2 min-w-[44px] min-h-[44px] text-xs font-mono text-muted-foreground hover:text-foreground border border-border/40 hover:border-primary/40 px-2 py-1"
-              aria-label={language === 'de' ? 'Switch to English' : 'Auf Deutsch wechseln'}
+              aria-label={t('a11y.switchLang')}
             >
               {language === 'de' ? 'EN' : 'DE'}
             </Button>
@@ -94,7 +96,7 @@ export function SiteHeader() {
             <Button variant="ghost" size="icon" asChild className="min-w-[44px] min-h-[44px]">
               <Link
                 href={ROUTES.profile}
-                aria-label="Profile"
+                aria-label={t('a11y.profile')}
                 aria-current={isNavActive(pathname, ROUTES.profile) ? 'page' : undefined}
               >
                 <Users
@@ -107,7 +109,7 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-2 lg:hidden">
             <Button variant="ghost" size="icon" asChild className="min-w-[44px] min-h-[44px]">
-              <Link href={ROUTES.profile} aria-label="Profile">
+              <Link href={ROUTES.profile} aria-label={t('a11y.profile')}>
                 <Users size={20} />
               </Link>
             </Button>

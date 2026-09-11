@@ -48,7 +48,7 @@ Chart visuals use Recharts inside client leaves (`ChartShellClient`, `HomeCharts
 
 ## i18n / legal
 
-Bilingual public copy via `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`. No hardcoded tenant names in app code (`check:brand` intent). Thread strings via props from RSC parents when adding new UI.
+Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`. Club-announcer voice: short, imperative, no formulas on the public surface. Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
 
 ## Class names & layout
 

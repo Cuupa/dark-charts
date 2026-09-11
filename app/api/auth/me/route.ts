@@ -14,7 +14,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   const { data: user, error } = await supabase
     .from('users')
     .select(
-      'id, email, role, emailVerified, trustLevel, authProvider, createdAt, fanProfile:fan_profiles(id, nickname, credits, remainingCredits, avatarUrl), djProfile:dj_profiles(id, bio, soundcloudLink, expertStatus, reputationScore), bandProfile:band_profiles(id, artistId, members), labelProfile:label_profiles(id, companyName, website)'
+      'id, email, role, emailVerified, trustLevel, authProvider, createdAt, fanProfile:fan_profiles(id, nickname, credits, remainingCredits, avatarUrl), djProfile:dj_profiles(id, bio, displayName, soundcloudLink, expertStatus, expertRequested, reputationScore), bandProfile:band_profiles(id, artistId, members), labelProfile:label_profiles(id, companyName, website)'
     )
     .eq('id', decoded.userId)
     .maybeSingle();

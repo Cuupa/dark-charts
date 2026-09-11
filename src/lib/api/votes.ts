@@ -101,11 +101,13 @@ export async function processFanBulkVote(
 
   const startOfWeek = getStartOfWeek()
 
+  const weekStartIso = startOfWeek.toISOString()
+
   const { count: weeklyVoteCount, error: weeklyCountError } = await supabase
     .from('votes')
     .select('*', { count: 'exact', head: true })
     .eq('fanId', fanProfile.id)
-    .gte('createdAt', startOfWeek.toISOString())
+    .eq('weekStart', weekStartIso)
 
   if (weeklyCountError) {
     throw new Error(`Failed to check weekly vote status: ${weeklyCountError.message}`)
@@ -126,6 +128,7 @@ export async function processFanBulkVote(
       .select('*')
       .eq('fanId', fanProfile.id)
       .eq('releaseId', releaseId)
+      .eq('weekStart', weekStartIso)
       .maybeSingle()
 
     if (existingVoteError) {
@@ -160,15 +163,16 @@ export async function processFanBulkVote(
 
     const { data: createdVote, error: createVoteError } = await supabase
       .from('votes')
-      .insert({
-        fanId: fanProfile.id,
-        releaseId,
-        allocatedVotes: voteCount,
-        cost,
-        votes: voteCount,
-        credits: cost,
-        createdAt: now,
-      })
+        .insert({
+          fanId: fanProfile.id,
+          releaseId,
+          allocatedVotes: voteCount,
+          cost,
+          votes: voteCount,
+          credits: cost,
+          weekStart: weekStartIso,
+          createdAt: now,
+        })
       .select('*')
       .single()
 
@@ -223,7 +227,7 @@ export async function processDjBulkVote(
     .from('expert_votes')
     .delete()
     .eq('djId', djProfile.id)
-    .gte('createdAt', startOfWeek.toISOString())
+    .eq('weekStart', startOfWeek.toISOString())
 
   if (deleteError) {
     throw new Error(
@@ -236,12 +240,13 @@ export async function processDjBulkVote(
   for (const [releaseId, rank] of entries) {
     const { data: createdVote, error: createError } = await supabase
       .from('expert_votes')
-      .insert({
-        djId: djProfile.id,
-        releaseId,
-        rank,
-        rating: rank,
-      })
+        .insert({
+          djId: djProfile.id,
+          releaseId,
+          rank,
+          rating: rank,
+          weekStart: startOfWeek.toISOString(),
+        })
       .select('*')
       .single()
 

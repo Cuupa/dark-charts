@@ -1,5 +1,7 @@
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
-import { calculateExpertPoints } from '@/lib/math/expert-ranking';
+import { resetFanCredits } from '@/lib/api/fan-credits';
+import { calculateExpertPoints, shrinkExpertScores } from '@/lib/math/expert-ranking';
+import { updateDjReputationsFromLaterCharts } from '@/lib/api/expert-reputation';
 import {
   calculateFanScore,
   calculateCommunityPowerPercent,
@@ -9,7 +11,7 @@ import { buildGenreChartInserts } from '@/lib/genre-aggregation';
 import { detectVoteAnomalies, persistVoteAnomalies } from '@/lib/vote-anomaly';
 import { blendStreamingPopularity, fetchYoutubePopularity } from '@/lib/youtube-metrics';
 import { getSystemSettings } from '@/lib/api/systemSettings';
-import { getWeekEnd, getPreviousWeekStart, getIsoWeekYear } from '@/lib/week';
+import { getPreviousWeekStart, getIsoWeekYear } from '@/lib/week';
 
 type ChartTypeKey = 'fan' | 'expert' | 'streaming' | 'combined';
 
@@ -86,7 +88,6 @@ function normalizeScore(value: number, max: number): number {
 export class ChartAggregationService {
   async aggregateChartsForWeek(weekStart: Date) {
     const supabase = createServiceRoleSupabaseClient();
-    const weekEnd = getWeekEnd(weekStart);
     const lastWeekStart = getPreviousWeekStart(weekStart);
     const { weekNumber, year } = getIsoWeekYear(weekStart);
     const settings = await getSystemSettings(supabase);
@@ -100,8 +101,7 @@ export class ChartAggregationService {
     const { data: fanVotes, error: fanVotesError } = await supabase
       .from('votes')
       .select('*')
-      .gte('createdAt', weekStartIso)
-      .lt('createdAt', weekEnd.toISOString());
+      .eq('weekStart', weekStartIso);
 
     if (fanVotesError) {
       throw new Error(`Failed to fetch fan votes: ${fanVotesError.message}`);
@@ -110,8 +110,7 @@ export class ChartAggregationService {
     const { data: expertVotes, error: expertVotesError } = await supabase
       .from('expert_votes')
       .select('*, dj:dj_profiles(reputationScore, expertStatus)')
-      .gte('createdAt', weekStartIso)
-      .lt('createdAt', weekEnd.toISOString());
+      .eq('weekStart', weekStartIso);
 
     if (expertVotesError) {
       throw new Error(`Failed to fetch expert votes: ${expertVotesError.message}`);
@@ -260,6 +259,7 @@ export class ChartAggregationService {
       metrics.fanScore = calculateFanScore(votes);
     }
 
+    const expertRaw = new Map<string, { rawScore: number; voteCount: number }>();
     for (const expertVote of expertVotes ?? []) {
       const dj = expertVote.dj as
         | { reputationScore: number; expertStatus: boolean }
@@ -268,8 +268,20 @@ export class ChartAggregationService {
       if (!dj?.expertStatus) continue;
 
       const reputation = Math.max(1, Number(dj.reputationScore ?? 1));
-      const metrics = ensureMetrics(expertVote.releaseId);
-      metrics.expertScore += calculateExpertPoints(expertVote.rank, reputation);
+      const entry = expertRaw.get(expertVote.releaseId) ?? { rawScore: 0, voteCount: 0 };
+      entry.rawScore += calculateExpertPoints(expertVote.rank, reputation);
+      entry.voteCount += 1;
+      expertRaw.set(expertVote.releaseId, entry);
+    }
+
+    for (const { releaseId, score } of shrinkExpertScores(
+      [...expertRaw.entries()].map(([releaseId, value]) => ({
+        releaseId,
+        rawScore: value.rawScore,
+        voteCount: value.voteCount,
+      }))
+    )) {
+      ensureMetrics(releaseId).expertScore = score;
     }
 
     for (const snapshot of snapshots) {
@@ -284,7 +296,7 @@ export class ChartAggregationService {
 
     const allReleaseIds = Array.from(releaseMetrics.keys());
     if (allReleaseIds.length === 0) {
-      await this.resetFanCredits(supabase, settings.voiceCreditsBudget);
+      await resetFanCredits(supabase, settings.voiceCreditsBudget);
       return [];
     }
 
@@ -313,7 +325,7 @@ export class ChartAggregationService {
       return { releaseId, ...m, weightedScore, communityPower };
     });
 
-    const chartTypes: ChartTypeKey[] = ['fan', 'expert', 'combined'];
+    const chartTypes: ChartTypeKey[] = ['fan', 'expert', 'combined', 'streaming'];
     const lastWeekPlacements = new Map<ChartTypeKey, Map<string, number>>();
 
     for (const chartType of chartTypes) {
@@ -338,8 +350,10 @@ export class ChartAggregationService {
       chartType: ChartTypeKey,
       scoreFn: (item: (typeof combinedScores)[0]) => number
     ) => {
-      const sorted = [...combinedScores].sort((a, b) => scoreFn(b) - scoreFn(a));
-      const placements = lastWeekPlacements.get(chartType)!;
+      const sorted = [...combinedScores]
+        .filter((item) => chartType !== 'streaming' || scoreFn(item) > 0)
+        .sort((a, b) => scoreFn(b) - scoreFn(a));
+      const placements = lastWeekPlacements.get(chartType) ?? new Map<string, number>();
 
       sorted.forEach((item, index) => {
         const placement = index + 1;
@@ -367,6 +381,7 @@ export class ChartAggregationService {
     buildEntries('fan', (i) => i.fanScore);
     buildEntries('expert', (i) => i.expertScore);
     buildEntries('combined', (i) => i.weightedScore);
+    buildEntries('streaming', (i) => i.streamingScore);
 
     const { data: releaseGenreRows } = await supabase
       .from('releases')
@@ -401,6 +416,13 @@ export class ChartAggregationService {
       throw new Error(`Failed to create chart entries: ${insertError.message}`);
     }
 
+    const fanTopReleaseIds = [...combinedScores]
+      .sort((a, b) => b.fanScore - a.fanScore)
+      .slice(0, 20)
+      .filter((row) => row.fanScore > 0)
+      .map((row) => row.releaseId);
+    await updateDjReputationsFromLaterCharts(supabase, lastWeekStartIso, fanTopReleaseIds);
+
     const fanIdsForAnomaly = [...new Set((fanVotes ?? []).map((v) => v.fanId))];
     if (fanIdsForAnomaly.length > 0) {
       const { data: fanProfilesForAnomaly } = await supabase
@@ -431,22 +453,9 @@ export class ChartAggregationService {
       await persistVoteAnomalies(supabase, weekStartIso, anomalies);
     }
 
-    await this.resetFanCredits(supabase, settings.voiceCreditsBudget);
+    await resetFanCredits(supabase, settings.voiceCreditsBudget);
 
     return combinedScores;
-  }
-
-  private async resetFanCredits(
-    supabase: ReturnType<typeof createServiceRoleSupabaseClient>,
-    budget: number
-  ) {
-    const { error } = await supabase
-      .from('fan_profiles')
-      .update({ remainingCredits: budget, updatedAt: new Date().toISOString() });
-
-    if (error) {
-      throw new Error(`Failed to reset fan credits: ${error.message}`);
-    }
   }
 }
 

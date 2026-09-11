@@ -9,8 +9,8 @@ Distilled anti-patterns from project history. **Append session findings before o
 | Anti-pattern | Rule |
 |--------------|------|
 | `@prisma/client` being re-added / used at runtime | ⛔ Prisma is retired. `prisma/schema.prisma` + `src/backend/repositories/prisma/*` are legacy. Use `src/backend/repositories/supabase/*` + the `I*Repository` interfaces. |
-| Schema edited only in `reset.sql` | Keep `supabase/reset.sql` (bootstrap) + `supabase/migrations/*.sql` (incremental) + `src/types/database.ts` in sync. Fold new changes into `reset.sql` AND add a migration. |
-| Copying darktunes rule “no `supabase/migrations/`” | Dark Charts **does** use incremental migrations (unlike darktunes). Apply the migration to existing DBs; `reset.sql` remains the full fresh-install bootstrap. |
+| Adding `supabase/migrations/*.sql` | ⛔ Forbidden. `supabase/reset.sql` is the only SQL artefact and must stay fully idempotent. Update `src/types/database.ts` in the same change. |
+| Schema edited only in types | Keep `reset.sql` and `database.ts` in sync. Re-run `reset.sql` on existing DBs. |
 | Public reads with `select('*')` | Use strict column whitelists on public surfaces; keep secrets out of public rows. |
 
 ## Chart & math
@@ -41,6 +41,18 @@ Distilled anti-patterns from project history. **Append session findings before o
 ---
 
 ## Session additions
+
+### 2026-09-11 — Schema is one idempotent script
+
+**Symptom:** Incremental `supabase/migrations/*.sql` drifted from `reset.sql` and duplicated policy.
+**Cause:** Dark Charts briefly copied a two-artefact migration model.
+**Rule / Fix:** Only `supabase/reset.sql`. Re-run it on existing DBs. Never add migration files.
+
+### 2026-09-11 — Docs claimed three pillars; product is two
+
+**Symptom:** PRD / INTEGRATION-SUMMARY / README advertised Bayesian experts, a streaming loyalty pillar, and mock-filled public charts.
+**Cause:** Concept document was copied into living product docs without matching `ChartAggregationService` / `PillarSlug`.
+**Rule / Fix:** Trust `src/lib/routes.ts`, `normalizeHybridWeights`, and `/methodology` over marketing copy. Empty live charts must stay empty.
 
 <!-- Append dated entries here using the template below. Newest first. -->
 

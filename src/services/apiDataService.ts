@@ -2,6 +2,7 @@ import { ChartData, Genre, IDataService, Track } from '@/types';
 import { ComprehensiveDataService } from './comprehensiveDataService';
 import { logger } from '@/lib/logger';
 import { isSupabaseEnvConfigured } from '@/lib/supabase/isConfigured';
+import { calculateOverallChart } from '@/lib/math/normalization';
 
 type ChartApiEntry = {
   id: string;
@@ -75,7 +76,7 @@ export class ApiDataService implements IDataService {
   private fanCharts: Track[] = [];
   private expertCharts: Track[] = [];
   private combinedCharts: Track[] = [];
-  /** True when live API returned empty and mock data is shown. */
+  /** True when Supabase is unconfigured and demo catalog data is shown. */
   isUsingMockData = false;
   /** True when charts are populated from iTunes bootstrap (no DB/env). */
   isUsingItunesData = false;
@@ -103,37 +104,30 @@ export class ApiDataService implements IDataService {
         fetchChartType('combined'),
       ]);
 
-      const fanCharts = fanResult.tracks;
-      const expertCharts = expertResult.tracks;
-      const combinedCharts = combinedResult.tracks;
+      this.isUsingMockData = false;
+      this.isUsingItunesData =
+        fanResult.source === 'itunes' ||
+        expertResult.source === 'itunes' ||
+        combinedResult.source === 'itunes';
 
-      const hasApiData =
-        fanCharts.length > 0 ||
-        expertCharts.length > 0 ||
-        combinedCharts.length > 0;
-
-      if (hasApiData) {
-        this.isUsingMockData = false;
-        this.isUsingItunesData =
-          fanResult.source === 'itunes' ||
-          expertResult.source === 'itunes' ||
-          combinedResult.source === 'itunes';
-        const data = { fanCharts, expertCharts, streamingCharts: [], combinedCharts };
-        this.cacheCharts(data);
-        return data;
-      }
-
-      logger.warn('API charts empty — falling back to mock data');
-      this.isUsingMockData = true;
-      this.isUsingItunesData = false;
-      const data = await this.fallback.getAllCharts();
+      const data = {
+        fanCharts: fanResult.tracks,
+        expertCharts: expertResult.tracks,
+        streamingCharts: [] as Track[],
+        combinedCharts: combinedResult.tracks,
+      };
       this.cacheCharts(data);
       return data;
     } catch (error) {
-      logger.error('Failed to fetch charts from API, using mock fallback', { error });
-      this.isUsingMockData = true;
+      logger.error('Failed to fetch charts from API', { error });
+      this.isUsingMockData = false;
       this.isUsingItunesData = false;
-      const data = await this.fallback.getAllCharts();
+      const data = {
+        fanCharts: [] as Track[],
+        expertCharts: [] as Track[],
+        streamingCharts: [] as Track[],
+        combinedCharts: [] as Track[],
+      };
       this.cacheCharts(data);
       return data;
     }
@@ -147,8 +141,7 @@ export class ApiDataService implements IDataService {
     }
 
     const { tracks } = await fetchChartType(type);
-    if (tracks.length > 0) return tracks;
-    return this.fallback.getChartByType(type);
+    return tracks;
   }
 
   calculateOverallChart(): Track[] {
@@ -157,11 +150,14 @@ export class ApiDataService implements IDataService {
     }
 
     if (this.fanCharts.length === 0 && this.expertCharts.length === 0) {
-      return this.fallback.calculateOverallChart();
+      return [];
     }
 
-    logger.warn('Combined chart empty — falling back to client-side Borda merge');
-    return this.fallback.calculateOverallChart();
+    return calculateOverallChart(this.fanCharts, this.expertCharts, {
+      fan: 0.55,
+      expert: 0.45,
+      streaming: 0,
+    });
   }
 
   async vote(_trackId: string, _direction: 'up' | 'down'): Promise<void> {

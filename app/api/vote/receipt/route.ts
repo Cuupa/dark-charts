@@ -40,8 +40,8 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   const { data: votes, error } = await supabase
     .from('votes')
     .select('*, release:releases(*, artist:artists(*))')
-    .eq('fanId', fanProfile.id)
-    .gte('createdAt', startOfWeek.toISOString())
+      .eq('fanId', fanProfile.id)
+      .eq('weekStart', startOfWeek.toISOString())
     .order('createdAt', { ascending: false });
 
   if (error) throw new ApiError(500, error.message);

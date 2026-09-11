@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Track, Genre, ChartType } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ChartEntry } from '@/components/ChartEntry';
 import { ChartEntrySkeleton } from '@/components/skeletons';
 import { Card } from '@/components/ui/card';
@@ -184,7 +185,8 @@ function readUrlParams(): { year: number; week: number } | null {
 }
 
 function pushUrl(year: number, week: number) {
-  window.history.pushState({}, '', `/charts/archive?year=${year}&week=${week}`);
+  const path = window.location.pathname || '/charts/archive';
+  window.history.pushState({}, '', `${path}?year=${year}&week=${week}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -192,6 +194,7 @@ function pushUrl(year: number, week: number) {
 // ---------------------------------------------------------------------------
 
 export function ChartArchiveView() {
+  const { t } = useLanguage();
   const initial = readUrlParams() ?? getLastCompletedWeek();
 
   const [year, setYear] = useState(initial.year);
@@ -256,10 +259,10 @@ export function ChartArchiveView() {
       {/* Header */}
       <div>
         <h1 className="display-font text-3xl md:text-4xl text-foreground uppercase tracking-tight mb-2">
-          Chart Archive
+          {t('archive.title')}
         </h1>
         <p className="font-ui text-sm text-muted-foreground">
-          Browse completed weekly charts — results are read-only historical records
+          {t('archive.subtitle')}
         </p>
       </div>
 
@@ -269,11 +272,11 @@ export function ChartArchiveView() {
           variant="outline"
           size="sm"
           onClick={handlePrev}
-          aria-label="Previous week"
+          aria-label={t('archive.prevAria')}
           className="font-ui text-xs uppercase tracking-wider"
         >
           <CaretLeft className="mr-1" />
-          Prev Week
+          {t('archive.prev')}
         </Button>
 
         <Select
@@ -282,7 +285,7 @@ export function ChartArchiveView() {
         >
           <SelectTrigger
             className="w-[100px] bg-secondary border-border font-ui text-xs"
-            aria-label="Select year"
+            aria-label={t('archive.selectYear')}
           >
             <SelectValue />
           </SelectTrigger>
@@ -301,14 +304,14 @@ export function ChartArchiveView() {
         >
           <SelectTrigger
             className="w-[120px] bg-secondary border-border font-ui text-xs"
-            aria-label="Select week"
+            aria-label={t('archive.selectWeek')}
           >
-            <SelectValue placeholder={`Week ${week}`} />
+            <SelectValue placeholder={t('archive.weekN', { week })} />
           </SelectTrigger>
           <SelectContent>
             {weeksInYear.map((w) => (
               <SelectItem key={w} value={w.toString()} className="font-ui text-xs">
-                Week {w}
+                {t('archive.weekN', { week: w })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -319,11 +322,11 @@ export function ChartArchiveView() {
           size="sm"
           onClick={handleNext}
           disabled={isNextDisabled}
-          aria-label="Next week"
+          aria-label={t('archive.nextAria')}
           aria-disabled={isNextDisabled}
           className="font-ui text-xs uppercase tracking-wider"
         >
-          Next Week
+          {t('archive.next')}
           <CaretRight className="ml-1" />
         </Button>
       </div>
@@ -332,7 +335,7 @@ export function ChartArchiveView() {
       <Card className="bg-card border border-border">
         <div className="p-4 border-b border-border">
           <h2 className="display-font text-xl uppercase text-foreground tracking-tight">
-            Week {week}, {year}
+            {t('archive.weekHeading', { week, year })}
           </h2>
         </div>
 
@@ -347,14 +350,14 @@ export function ChartArchiveView() {
         ) : hasError ? (
           <div className="p-12 text-center">
             <p className="font-ui text-sm text-destructive">
-              Failed to load chart data. Please try again.
+              {t('archive.loadError')}
             </p>
           </div>
         ) : tracks.length === 0 ? (
           <div className="p-12 text-center flex flex-col items-center gap-4">
             <MusicNote size={48} className="text-muted-foreground" />
             <p className="font-ui text-sm text-muted-foreground">
-              No chart entries found for this week.
+              {t('archive.empty')}
             </p>
           </div>
         ) : (
