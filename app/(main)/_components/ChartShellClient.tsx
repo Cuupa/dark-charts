@@ -12,6 +12,7 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { Track, ChartType, Genre, MainGenre } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { authFetch } from '@/lib/auth/client-fetch';
 import { logger } from '@/lib/logger';
 import { MusicPlayer } from '@/components/MusicPlayer';
@@ -93,6 +94,7 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
   const pathname = usePathname();
   const activePillar = resolveActivePillar(pathname);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [activePromotion, setActivePromotion] = useState<{
     type?: string;
     name?: string;
@@ -208,19 +210,19 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
 
       const fanIndex = safeFindIndex(fanCharts, (t) => t?.id === track.id, -1);
       if (fanIndex !== -1 && fanIndex < 20) {
-        positions.push({ chartName: 'Fan Charts', position: fanIndex + 1, chartType: 'fan' });
+        positions.push({ chartName: t('pillar.fan'), position: fanIndex + 1, chartType: 'fan' });
       }
       const expertIndex = safeFindIndex(expertCharts, (t) => t?.id === track.id, -1);
       if (expertIndex !== -1 && expertIndex < 20) {
         positions.push({
-          chartName: 'Club Charts',
+          chartName: t('pillar.club'),
           position: expertIndex + 1,
           chartType: 'expert',
         });
       }
       const overallIndex = safeFindIndex(overallChart, (t) => t?.id === track.id, -1);
       if (overallIndex !== -1) {
-        positions.push({ chartName: 'Overall Charts', position: overallIndex + 1 });
+        positions.push({ chartName: t('pillar.overall'), position: overallIndex + 1 });
       }
 
       Object.entries(mainGenreMap).forEach(([mainGenre, subGenres]) => {
@@ -254,7 +256,7 @@ export function ChartShellClient({ children, visibleTracks }: ChartShellClientPr
 
       return positions;
     },
-    [fanCharts, expertCharts, overallChart]
+    [fanCharts, expertCharts, overallChart, t]
   );
 
   const handleNavigateToChart = useCallback(

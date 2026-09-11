@@ -146,6 +146,19 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     logger.warn('Database chart fetch failed, falling back to iTunes', { error });
   }
 
+  if (type === 'streaming') {
+    const empty = NextResponse.json({
+      success: true,
+      chartType: type,
+      entries: [],
+      count: 0,
+      source: 'database',
+    });
+    return setRateLimitHeaders(applyCorsToResponse(empty, 'GET,OPTIONS'), req, {
+      maxRequests: 120,
+    });
+  }
+
   const itunesPayload = await getItunesChartResponse({
     type,
     limit: limitNum,

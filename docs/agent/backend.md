@@ -32,7 +32,11 @@ Protected by `CRON_SECRET` via `src/lib/cronAuth.ts`. Schedules in `vercel.json`
 | `/api/sync` | Drain durable `sync_queue` (iTunes → releases + R2) |
 | `/api/sync/queue` | Enqueue all visible artists |
 | `/api/cron/sync-itunes-artwork` | R2 cover backfill |
-| `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection |
+| `/api/cron/streaming-snapshots` | Sunday 22:00 UTC Spotify/YouTube snapshot ingest |
+| `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection + credit reset |
+| `/api/cron/reset-credits` | Monday credit refresh (safety net if aggregation did not run) |
+| `/api/cron/evaluate-badges` | Monday fan badge awards for the completed ISO week |
+| `/api/cron/purge-inactive` | Monday GDPR purge of accounts inactive 24 months (non-admin) |
 
 Sync DAL: `src/lib/api/syncQueue.ts`, worker: `src/lib/sync/processSyncQueue.ts`, artist sync: `src/lib/sync/syncArtist.ts`, import: `src/lib/catalog/importDarktunes.ts` + `seedConsolidatedArtists.ts`.
 

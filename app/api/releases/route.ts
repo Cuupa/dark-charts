@@ -8,6 +8,7 @@ import {
   setRateLimitHeaders,
 } from '@/lib/api-middleware';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
+import { getVotingEligibilityCutoff } from '@/lib/voting-eligibility';
 
 const querySchema = z.object({
   id: z.string().optional(),
@@ -23,6 +24,9 @@ const querySchema = z.object({
     .default('0')
     .transform((val) => parseInt(val, 10))
     .pipe(z.number().min(0)),
+  eligible: z
+    .enum(['1', 'true', '0', 'false'])
+    .optional(),
 });
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
@@ -38,7 +42,8 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     throw new ApiError(400, 'Invalid parameters', 'VALIDATION_ERROR');
   }
 
-  const { id, limit: limitNum, offset: offsetNum } = parseResult.data;
+  const { id, limit: limitNum, offset: offsetNum, eligible } = parseResult.data;
+  const eligibleOnly = eligible === '1' || eligible === 'true';
   const supabase = createServiceRoleSupabaseClient();
 
   if (id) {
@@ -57,19 +62,29 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     });
   }
 
-  const { data: releases, error: releasesError } = await supabase
+  let listQuery = supabase
     .from('releases')
     .select('*, artist:artists(*)')
     .eq('isVisible', true)
     .order('releaseDate', { ascending: false })
     .range(offsetNum, offsetNum + limitNum - 1);
 
-  if (releasesError) throw new ApiError(500, releasesError.message);
-
-  const { count, error: countError } = await supabase
+  let countQuery = supabase
     .from('releases')
     .select('*', { count: 'exact', head: true })
     .eq('isVisible', true);
+
+  if (eligibleOnly) {
+    const cutoff = getVotingEligibilityCutoff().toISOString().slice(0, 10);
+    listQuery = listQuery.gte('releaseDate', cutoff);
+    countQuery = countQuery.gte('releaseDate', cutoff);
+  }
+
+  const { data: releases, error: releasesError } = await listQuery;
+
+  if (releasesError) throw new ApiError(500, releasesError.message);
+
+  const { count, error: countError } = await countQuery;
 
   if (countError) throw new ApiError(500, countError.message);
 

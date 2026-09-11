@@ -23,7 +23,7 @@ export const GET = withAdminAuth(async (req) => {
       .order('createdAt', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (weekOnly) query = query.gte('createdAt', weekStart.toISOString());
+    if (weekOnly) query = query.eq('weekStart', weekStart.toISOString());
 
     const { data, error, count } = await query;
     if (error) throw new ApiError(500, error.message);
@@ -54,7 +54,7 @@ export const GET = withAdminAuth(async (req) => {
     .order('createdAt', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (weekOnly) query = query.gte('createdAt', weekStart.toISOString());
+  if (weekOnly) query = query.eq('weekStart', weekStart.toISOString());
 
   const { data, error, count } = await query;
   if (error) throw new ApiError(500, error.message);

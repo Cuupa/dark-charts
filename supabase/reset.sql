@@ -135,8 +135,10 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "userId" UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
   bio TEXT,
+  "displayName" TEXT,
   "soundcloudLink" TEXT,
   "expertStatus" BOOLEAN NOT NULL DEFAULT FALSE,
+  "expertRequested" BOOLEAN NOT NULL DEFAULT FALSE,
   "reputationScore" NUMERIC NOT NULL DEFAULT 1,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -144,15 +146,21 @@ CREATE TABLE IF NOT EXISTS dj_profiles (
 
 ALTER TABLE dj_profiles ALTER COLUMN "reputationScore" SET DEFAULT 1;
 UPDATE dj_profiles SET "reputationScore" = 1 WHERE "reputationScore" = 0;
+ALTER TABLE dj_profiles ADD COLUMN IF NOT EXISTS "expertRequested" BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE dj_profiles ADD COLUMN IF NOT EXISTS "displayName" TEXT;
 
 CREATE TABLE IF NOT EXISTS band_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "userId" UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-  "artistId" UUID NOT NULL REFERENCES artists(id) ON DELETE CASCADE,
+  "artistId" UUID REFERENCES artists(id) ON DELETE CASCADE,
   members TEXT[] NOT NULL DEFAULT '{}',
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE band_profiles ALTER COLUMN "artistId" DROP NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_band_profiles_artist_id_unique
+  ON band_profiles ("artistId") WHERE "artistId" IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS label_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -192,8 +200,8 @@ CREATE TABLE IF NOT EXISTS votes (
   votes INTEGER NOT NULL DEFAULT 0,
   "allocatedVotes" INTEGER NOT NULL DEFAULT 0,
   cost INTEGER NOT NULL DEFAULT 0,
-  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE ("fanId", "releaseId")
+  "weekStart" TIMESTAMPTZ NOT NULL,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS expert_votes (
@@ -202,9 +210,25 @@ CREATE TABLE IF NOT EXISTS expert_votes (
   "releaseId" UUID NOT NULL REFERENCES releases(id) ON DELETE CASCADE,
   rating NUMERIC NOT NULL,
   rank INTEGER NOT NULL DEFAULT 0,
-  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE ("djId", "releaseId")
+  "weekStart" TIMESTAMPTZ NOT NULL,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE votes ADD COLUMN IF NOT EXISTS "weekStart" TIMESTAMPTZ;
+UPDATE votes
+SET "weekStart" = (date_trunc('week', "createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+WHERE "weekStart" IS NULL;
+ALTER TABLE votes ALTER COLUMN "weekStart" SET NOT NULL;
+ALTER TABLE votes DROP CONSTRAINT IF EXISTS "votes_fanId_releaseId_key";
+CREATE UNIQUE INDEX IF NOT EXISTS votes_fan_release_week_idx ON votes ("fanId", "releaseId", "weekStart");
+
+ALTER TABLE expert_votes ADD COLUMN IF NOT EXISTS "weekStart" TIMESTAMPTZ;
+UPDATE expert_votes
+SET "weekStart" = (date_trunc('week', "createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC')
+WHERE "weekStart" IS NULL;
+ALTER TABLE expert_votes ALTER COLUMN "weekStart" SET NOT NULL;
+ALTER TABLE expert_votes DROP CONSTRAINT IF EXISTS "expert_votes_djId_releaseId_key";
+CREATE UNIQUE INDEX IF NOT EXISTS expert_votes_dj_release_week_idx ON expert_votes ("djId", "releaseId", "weekStart");
 
 CREATE TABLE IF NOT EXISTS streaming_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -303,6 +327,7 @@ ON CONFLICT (id) DO NOTHING;
 CREATE INDEX IF NOT EXISTS idx_artists_spotify_id ON artists ("spotifyId");
 CREATE INDEX IF NOT EXISTS idx_artists_is_visible ON artists ("isVisible");
 CREATE INDEX IF NOT EXISTS idx_artists_itunes_id ON artists ("itunesId");
+CREATE INDEX IF NOT EXISTS idx_artists_label_id ON artists ("labelId");
 CREATE INDEX IF NOT EXISTS idx_releases_artist_id ON releases ("artistId");
 CREATE INDEX IF NOT EXISTS idx_releases_spotify_id ON releases ("spotifyId");
 CREATE INDEX IF NOT EXISTS idx_releases_is_visible ON releases ("isVisible");
@@ -312,8 +337,10 @@ CREATE INDEX IF NOT EXISTS idx_chart_entries_release_id ON chart_entries ("relea
 CREATE INDEX IF NOT EXISTS idx_chart_entries_genre ON chart_entries (genre, "chartType", "weekStart");
 CREATE INDEX IF NOT EXISTS idx_votes_fan_id ON votes ("fanId");
 CREATE INDEX IF NOT EXISTS idx_votes_release_id ON votes ("releaseId");
+CREATE INDEX IF NOT EXISTS idx_votes_week_start ON votes ("weekStart");
 CREATE INDEX IF NOT EXISTS idx_expert_votes_dj_id ON expert_votes ("djId");
 CREATE INDEX IF NOT EXISTS idx_expert_votes_release_id ON expert_votes ("releaseId");
+CREATE INDEX IF NOT EXISTS idx_expert_votes_week_start ON expert_votes ("weekStart");
 CREATE INDEX IF NOT EXISTS idx_streaming_snapshots_artist_week ON streaming_snapshots ("artistId", "weekStart");
 CREATE INDEX IF NOT EXISTS idx_fan_profiles_user_id ON fan_profiles ("userId");
 CREATE INDEX IF NOT EXISTS idx_dj_profiles_user_id ON dj_profiles ("userId");
@@ -381,6 +408,82 @@ BEGIN
     CREATE POLICY public_read_badges ON badges
       FOR SELECT
       USING (TRUE);
+  END IF;
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- Auth helpers (idempotent)
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role FROM public.users WHERE id = auth.uid();
+$$;
+
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  user_role text := COALESCE(NEW.raw_user_meta_data->>'role', 'FAN');
+  user_nickname text := COALESCE(NEW.raw_user_meta_data->>'nickname', 'Anonymous Fan');
+BEGIN
+  INSERT INTO public.users (
+    id,
+    email,
+    role,
+    "emailVerified",
+    "authProvider",
+    "createdAt",
+    "updatedAt"
+  ) VALUES (
+    NEW.id,
+    NEW.email,
+    user_role,
+    (NEW.email_confirmed_at IS NOT NULL),
+    COALESCE(NEW.raw_app_meta_data->>'provider', 'email'),
+    NOW(),
+    NOW()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    "emailVerified" = EXCLUDED."emailVerified",
+    "authProvider" = EXCLUDED."authProvider",
+    "updatedAt" = NOW();
+
+  IF user_role = 'FAN' AND NOT EXISTS (
+    SELECT 1 FROM public.fan_profiles WHERE "userId" = NEW.id
+  ) THEN
+    INSERT INTO public.fan_profiles ("userId", nickname, credits, "remainingCredits")
+    VALUES (NEW.id, user_nickname, 150, 150);
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_auth_user();
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'users' AND policyname = 'users_read_own'
+  ) THEN
+    CREATE POLICY users_read_own ON public.users
+      FOR SELECT
+      USING (auth.uid() = id);
   END IF;
 END $$;
 

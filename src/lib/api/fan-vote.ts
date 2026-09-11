@@ -40,9 +40,11 @@ export async function submitFanBulkVotes(params: {
   fanProfile: FanProfileRow;
   votes: Record<string, number>;
   creditBudget: number;
+  weekStart: Date;
 }): Promise<{ votes: unknown[]; remainingCredits: number }> {
-  const { supabase, fanProfile, votes, creditBudget } = params;
+  const { supabase, fanProfile, votes, creditBudget, weekStart } = params;
   const entries = Object.entries(votes);
+  const weekStartIso = weekStart.toISOString();
 
   let totalCost = 0;
   for (const [, v] of entries) {
@@ -70,6 +72,7 @@ export async function submitFanBulkVotes(params: {
         .select('*')
         .eq('fanId', fanProfile.id)
         .eq('releaseId', releaseId)
+        .eq('weekStart', weekStartIso)
         .maybeSingle();
 
       if (existingError) {
@@ -96,6 +99,7 @@ export async function submitFanBulkVotes(params: {
             cost,
             votes: allocatedVotes,
             credits: cost,
+            weekStart: weekStartIso,
             createdAt: now,
           })
           .eq('id', existingVote.id)
@@ -116,6 +120,7 @@ export async function submitFanBulkVotes(params: {
             cost,
             votes: allocatedVotes,
             credits: cost,
+            weekStart: weekStartIso,
             createdAt: now,
           })
           .select()

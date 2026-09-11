@@ -47,7 +47,7 @@ Skipping docs because “the task was only code” is a process failure.
 - **Chart integrity** — Fan, Expert, and Streaming pools stay isolated until aggregation. No pay-to-win, no direct or indirect paid influence on rankings.
 - **No `any`** — Use `unknown` + type guards at API boundaries; validate with Zod. New edge functions carry Zod schemas.
 - **Server writes** — Mutations go through `app/api/**/route.ts` with service-role Supabase, never client-side DB.
-- **Schema** — `supabase/reset.sql` (bootstrap) + `supabase/migrations/*.sql` (incremental) + `src/types/database.ts`. Keep all in sync.
+- **Schema** — `supabase/reset.sql` is the **only** SQL artefact (fully idempotent). No `supabase/migrations/`. Keep `src/types/database.ts` in sync.
 - **No legacy serverless** — App Router Route Handlers only; no `api/` serverless folder.
 - **Prisma is retired** — `prisma/schema.prisma` and `src/backend/repositories/prisma/*` are legacy. Use the Supabase repositories (`src/backend/repositories/supabase/*`) and the `I*Repository` interfaces; do not add `@prisma/client`.
 - **Logging** — Use `logger` from `@/lib/logger`, not `console.*` in app code.

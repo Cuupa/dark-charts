@@ -42,6 +42,16 @@ export function ChartSidebar({ hasVoted = false }: ChartSidebarProps) {
       </Card>
 
       <Card className="p-4 border-border bg-card space-y-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          {t('djs.title')}
+        </h2>
+        <p className="text-xs text-muted-foreground">{t('djs.description')}</p>
+        <Button variant="outline" size="sm" asChild className="w-full">
+          <Link href={ROUTES.djs}>{t('djs.viewRanking')}</Link>
+        </Button>
+      </Card>
+
+      <Card className="p-4 border-border bg-card space-y-2">
         <div className="flex items-center gap-2 text-sm font-medium">
           <SpotifyLogo size={18} weight="fill" className="text-[#1DB954]" />
           Spotify

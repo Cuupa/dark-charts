@@ -15,6 +15,7 @@ import {
 function getActivePillar(pathname: string): PillarView {
   if (pathname === '/charts/fan') return 'fan';
   if (pathname === '/charts/club' || pathname === '/charts/expert') return 'club';
+  if (pathname === '/charts/streaming') return 'streaming';
   return 'overview';
 }
 

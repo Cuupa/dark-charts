@@ -17,7 +17,7 @@ export function useVotingReleases() {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/releases?limit=${VOTING_POOL_LIMIT}`);
+        const res = await fetch(`/api/releases?limit=${VOTING_POOL_LIMIT}&eligible=1`);
         if (!res.ok) throw new Error('Failed to load releases');
         const data = await res.json();
         if (cancelled) return;

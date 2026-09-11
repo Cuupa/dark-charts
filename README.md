@@ -10,12 +10,12 @@ Built with **Next.js 16 (App Router)**, React 19, Supabase (PostgreSQL), Stripe 
 
 ## 🎵 Features
 
-- **Independent chart system** — three deliberately isolated ranking pillars (Fan, Expert, Streaming) that never leak into each other until aggregation. No pay-to-win.
-- **Fan charts** — Quadratic Voting with a monthly `voice credits` budget; trust-level scoring (OAuth + listening history) resists Sybil attacks. See `src/lib/math/quadratic.ts`, `fan-scoring.ts`.
-- **Expert charts** — Bayesian ranking over verified DJ/curator votes, weighted by a reputation score. See `src/lib/math/expert-ranking.ts`.
-- **Streaming charts** — Spotify + YouTube (85/15) normalised by a listener-loyalty quotient, not raw click counts. See `src/backend/services/StreamingChartCalculationService.ts`.
-- **Combined charts** — `ChartAggregationService` merges the three pillars into weighted overall charts, with anomaly detection that blocks voting on affected releases.
-- **Wave charting** — Rolling weekly arcs (`/charts/archive`, `/history`) and a user-weighted **custom charts** builder (`/custom-charts`).
+- **Independent chart system** — Fan and Club (expert) pools stay isolated until aggregation. No pay-to-win. A public streaming pillar is not shipped.
+- **Fan charts** — Quadratic Voting with a weekly `voice credits` budget; trust-level scoring (OAuth + listening history) resists Sybil attacks. Ballots are stored per ISO week. See `src/lib/math/quadratic.ts`, `fan-scoring.ts`.
+- **Club / expert charts** — Verified DJ top-10 ballots scored with rank points × reputation. See `src/lib/math/expert-ranking.ts`.
+- **Combined charts** — `ChartAggregationService` merges fan + expert into overall charts, with anomaly detection that blocks voting on affected releases.
+- **Wave charting** — Rolling weekly arcs (`/charts/archive`, `/history` — same DB archive) and a user-weighted **custom charts** builder (`/custom-charts`).
+- **Public catalog** — SEO artist/release pages (`/artist/[id]`, `/release/[id]`), `/search`, and band claiming.
 - **Genre taxonomy** — Dynamic main genres (`Gothic`, `Metal`, `Dark Electro`, `Crossover`) with granular subgenres; niche charts accumulate over longer windows. See `src/lib/config/genres.ts`.
 - **Roles** — `FAN`, `DJ`, `BAND`, `LABEL`, `ADMIN` with email verification (OAuth paths excepted) before voting.
 - **Catalog sync** — Durable `sync_queue` / `sync_logs`, iTunes + Spotify import, Odesli smart-link resolution, and R2 cover-art caching.
@@ -124,12 +124,7 @@ See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for full setup instructions and `.env.e
 
 ## 🗄 Database
 
-The schema bootstrap lives in **`supabase/reset.sql`** (full, idempotent) and incremental changes are applied via **`supabase/migrations/*.sql`** on existing databases. Types are defined in `src/types/database.ts`. **Keep all three in sync** — see the schema change checklist in [docs/agent/data-and-schema.md](docs/agent/data-and-schema.md) and [supabase/DB_REQUIREMENTS.md](supabase/DB_REQUIREMENTS.md).
-
-To apply the schema (fresh or existing database):
-
-1. Fresh install — run `supabase/reset.sql` in the **Supabase SQL Editor**.
-2. Existing DB — apply migrations in order under `supabase/migrations/`.
+The schema lives in **`supabase/reset.sql`** (the only SQL artefact; fully idempotent) and **`src/types/database.ts`**. Re-run `reset.sql` on fresh and existing databases. See [docs/agent/data-and-schema.md](docs/agent/data-and-schema.md) and [supabase/DB_REQUIREMENTS.md](supabase/DB_REQUIREMENTS.md).
 
 ---
 
@@ -207,8 +202,7 @@ src/
 ├── hooks/  contexts/  providers/  services/  styles/  types/
 └── assets/documents/           # Concept + reference markdown
 supabase/
-├── reset.sql                   # Full idempotent schema bootstrap
-└── migrations/                 # Incremental SQL (apply on existing DBs)
+└── reset.sql                   # Only SQL artefact (idempotent)
 scripts/                        # Import, seed, release tooling
 ```
 

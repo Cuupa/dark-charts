@@ -1,4 +1,8 @@
+'use client';
+
+import Link from 'next/link';
 import { Track } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { CaretUp, CaretDown, TrendUp, TrendDown, ArrowUp, ArrowDown, Minus, PlusCircle } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import { AlbumArtwork } from './AlbumArtwork';
@@ -14,6 +18,7 @@ interface ChartEntryProps {
 }
 
 export function ChartEntry({ track, index, onClick, animate = false }: ChartEntryProps) {
+  const { t } = useLanguage();
   const movementColor = track.movement && track.movement > 0 ? 'text-accent' : track.movement && track.movement < 0 ? 'text-primary' : 'text-muted-foreground';
   const glowColor = track.rank === 1 ? 'primary' : track.rank <= 3 ? 'accent' : 'primary';
   const communityPower = track.community_power ?? 0;
@@ -96,7 +101,13 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           <div>
             <div className="cyber-hover-chromatic data-font text-base md:text-xl font-bold text-foreground truncate">
-              {track.title}
+              <Link
+                href={`/release/${track.id}`}
+                onClick={(event) => event.stopPropagation()}
+                className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {track.title}
+              </Link>
             </div>
             <div className="data-font text-sm md:text-base text-muted-foreground truncate mt-0.5">
               {track.artist}
@@ -107,12 +118,12 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
                 <TrendUp className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                <span className="data-font text-[10px] text-muted-foreground uppercase">Wochen</span>
+                <span className="data-font text-[10px] text-muted-foreground uppercase">{t('chart.weeks')}</span>
                 <span className="data-font text-sm font-bold text-foreground">{track.weeksInChart || 1}</span>
               </div>
               
               <div className="flex items-center gap-1.5">
-                <span className="data-font text-[10px] text-muted-foreground uppercase">Votes</span>
+                <span className="data-font text-[10px] text-muted-foreground uppercase">{t('chart.votes')}</span>
                 <span className="data-font text-sm font-bold text-accent">{track.votes || 0}</span>
               </div>
             </div>
@@ -121,10 +132,10 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
           {communityPower > 0 && (
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-muted-foreground">Community Power</span>
+                <span className="font-ui text-[9px] uppercase tracking-[0.15em] text-muted-foreground">{t('chart.crowd')}</span>
                 <span className="data-font text-xs font-bold text-accent">{communityPower}%</span>
               </div>
-              <Progress value={communityPower} className="h-1.5 bg-secondary" aria-label={`Community power: ${communityPower}%`} />
+              <Progress value={communityPower} className="h-1.5 bg-secondary" aria-label={`${t('chart.crowd')}: ${communityPower}%`} />
             </div>
           )}
 
@@ -150,12 +161,12 @@ export function ChartEntry({ track, index, onClick, animate = false }: ChartEntr
         <div className="hidden md:flex items-center gap-6 flex-shrink-0 min-w-[140px]">
           <div className="flex flex-col items-center gap-1">
             <TrendUp className="w-4 h-4 text-muted-foreground" />
-            <span className="data-font text-xs text-muted-foreground">Wochen</span>
+            <span className="data-font text-xs text-muted-foreground">{t('chart.weeks')}</span>
             <span className="data-font text-base font-bold text-foreground">{track.weeksInChart || 1}</span>
           </div>
           
           <div className="flex flex-col items-center gap-1">
-            <span className="data-font text-xs text-muted-foreground">Votes</span>
+            <span className="data-font text-xs text-muted-foreground">{t('chart.votes')}</span>
             <span className="data-font text-base font-bold text-accent">{track.votes || 0}</span>
           </div>
         </div>

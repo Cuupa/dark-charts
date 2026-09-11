@@ -14,7 +14,7 @@ export type Genre =
 
 export type ChartType = 'fan' | 'expert' | 'streaming' | 'overall';
 
-export type ViewType = 'home' | 'main-genre' | 'sub-genre' | 'profile' | 'custom-charts' | 'about' | 'voting' | 'voting-confirmation' | 'history' | 'admin' | 'admin-metrics' | 'admin-analytics' | 'admin-users' | 'admin-artists' | 'admin-charts' | 'admin-promotions' | 'admin-spotlight' | 'admin-anomalies' | 'admin-settings' | 'oauth-callback' | 'profiles-demo' | 'privacy' | 'terms' | 'imprint' | 'archive';
+export type ViewType = 'home' | 'main-genre' | 'sub-genre' | 'profile' | 'custom-charts' | 'about' | 'voting' | 'voting-confirmation' | 'history' | 'admin' | 'admin-metrics' | 'admin-analytics' | 'admin-users' | 'admin-artists' | 'admin-charts' | 'admin-promotions' | 'admin-spotlight' | 'admin-anomalies' | 'admin-settings' | 'oauth-callback' | 'profiles-demo' | 'privacy' | 'terms' | 'imprint' | 'archive' | 'search';
 
 export interface Track {
   id: string;
@@ -231,6 +231,8 @@ export interface BandProfile extends BaseUserProfile {
 
 export interface DJProfile extends BaseUserProfile {
   userType: 'dj';
+  expertStatus?: boolean;
+  expertRequested?: boolean;
   expertWeight: number;
   references: string[];
   curatedPlaylists: {

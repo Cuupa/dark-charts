@@ -3,7 +3,7 @@
 Living product requirements for an independent chart platform for the Heavy Metal, Gothic, Dark Wave, and EBM underground scene.
 
 **Stack (SSOT):** Next.js 16 App Router · React 19 · Supabase (PostgreSQL) · Stripe (Spotlight) · Vercel · Tailwind v4.
-**Schema SSOT:** `supabase/reset.sql` (bootstrap) + `supabase/migrations/*.sql` (incremental) + `src/types/database.ts`.
+**Schema SSOT:** `supabase/reset.sql` (only SQL artefact, fully idempotent) + `src/types/database.ts`.
 **Concept source:** [`src/assets/documents/Musikcharts_Konzept__Schwarze_&_Metal_Szene.md`](src/assets/documents/Musikcharts_Konzept__Schwarze_&_Metal_Szene.md).
 
 Related docs: [README.md](README.md) · [ADMIN.md](ADMIN.md) · [INTEGRATION-SUMMARY.md](INTEGRATION-SUMMARY.md) · [docs/agent/](docs/agent/) · [CHANGELOG.md](CHANGELOG.md)
@@ -18,9 +18,10 @@ A **fair, manipulation-resistant** music chart system for the global dark scene.
 
 Dark Charts aggregate three strictly isolated ranking pillars and present them honestly:
 
-1. **Fan charts** — democratic Quadratic Voting with a monthly `voice credits` budget and trust-level Sybil resistance.
-2. **Expert charts** — Bayesian ranking over verified DJ/curator votes, weighted by reputation.
-3. **Streaming charts** — Spotify + YouTube normalised by a listener-loyalty quotient.
+1. **Fan charts** — democratic Quadratic Voting with a weekly `voice credits` budget and trust-level Sybil resistance.
+2. **Expert (Club) charts** — rank-points over verified DJ/curator top-10 ballots, weighted by reputation.
+3. **Combined** — weighted merge of fan + expert only.
+4. **Streaming (separate)** — Spotify/YouTube popularity snapshots. Not unique listeners; not in the overall merge.
 
 **Experience qualities:** independent · transparent · high-contrast dark aesthetic · WCAG 2.1 AA on public UI · niche-aware.
 
@@ -30,7 +31,7 @@ Dark Charts aggregate three strictly isolated ranking pillars and present them h
 
 | Surface | Route prefix | Primary users | Auth |
 |---------|--------------|---------------|------|
-| Public site | `/`, `/charts/*`, `/genre/*`, `/spotlight` | Fans, DJs, bands, labels, SEO | None |
+| Public site | `/`, `/charts/*`, `/genre/*`, `/artist/*`, `/release/*`, `/search`, `/djs`, `/spotlight` | Fans, DJs, bands, labels, SEO | None |
 | Voting | `/voting` | Fans (verified) | Supabase Auth + email verification |
 | Expert voting | `/voting` (DJ pool) | Verified DJs / curators | DJ role + verified expert status |
 | Profile | `/profile`, `/voting/confirmation` | Fans, DJs | Supabase Auth |
@@ -49,20 +50,19 @@ Dark Charts aggregate three strictly isolated ranking pillars and present them h
 ### 3.1 Chart pillars
 | Pillar | Algorithm | Source | Integrity guard |
 |--------|-----------|--------|-----------------|
-| Fan | Quadratic Voting + trust weights | `votes` | `trust-level.ts`, `fan-scoring.ts` |
-| Expert | Bayesian ranking + reputation | `expert_votes` | `expert-ranking.ts` |
-| Streaming | Loyalty quotient (Spotify/YouTube 85/15) | Spotify + YouTube | `StreamingChartCalculationService.ts` |
-| Combined | Weighted merge | All three | `ChartAggregationService.ts` + anomaly guard |
+| Fan | Quadratic Voting + trust weights | `votes` (`weekStart`) | `trust-level.ts`, `fan-scoring.ts` |
+| Expert | Rank points × reputation, shrunk toward weekly prior | `expert_votes` (`weekStart`) | `expert-ranking.ts`, `expert-reputation.ts` |
+| Combined | Weighted merge of fan + expert | Those two pools | `ChartAggregationService.ts` + anomaly guard |
 
 ### 3.2 Public site
-- Rolling weekly chart arcs (`/charts/[pillar]`, `/charts/archive`, `/history`).
+- Rolling weekly chart arcs (`/charts/fan`, `/charts/club`, `/charts/archive`, `/history` — history is the same DB archive).
 - Genre taxonomy: main genres (`Gothic`, `Metal`, `Dark Electro`, `Crossover`) with granular subgenres; niche windows accumulate over longer periods. See `src/lib/config/genres.ts`.
 - **Methodology** page (`/methodology`) making the ranking approach transparent.
-- **Custom charts** builder — fans weight the three pillars (e.g. 50/30/20) for a personalised discovery list.
+- **Custom charts** builder — fans weight fan vs expert (streaming slider is ignored) for a personalised discovery list.
 - Overview, search, artist top and category top via `/api/v1/*`.
 
 ### 3.3 Voting
-- Quadratic voting with periodic voice credits; cost = votes².
+- Quadratic voting with a weekly voice-credit budget; cost = votes². Ballots are stored per ISO week (`weekStart`). Eligible pool: releases from the last 12 months.
 - Email verification required before voting (OAuth paths excepted).
 - Vote receipt, status, and blocked-releases endpoints (`/api/vote/*`).
 - Conflicts and anomaly detection (`vote-conflicts.ts`, `vote-anomaly.ts`).
@@ -96,7 +96,7 @@ Dark Charts aggregate three strictly isolated ranking pillars and present them h
 | Chart integrity | Pools isolated until aggregation; anomaly guard blocks voting |
 | Security | RLS on sensitive tables; service-role writes; no secrets in browser |
 | Performance | ISR/caching on public chart routes; no unnecessary client fetches |
-| Schema | `reset.sql` bootstrap + idempotent migrations + `database.ts` in sync |
+| Schema | `reset.sql` only (idempotent) + `database.ts` in sync; no migration files |
 | Typing | No `any`; `unknown` + type guards / Zod at API boundaries |
 | Brand | CI colors via theme; no hardcoded tenant names |
 
@@ -107,7 +107,7 @@ Dark Charts aggregate three strictly isolated ranking pillars and present them h
 - A release climbs a pillar only through the intended algorithmic route; no UI or API path can buy rank.
 - Community trusts the charts — methodology is public and reproducible.
 - Niche subgenres receive fair visibility (longer windows / thresholds) rather than being swamped by high-volume categories.
-- Operators can pause voting, trigger aggregation, and resolve anomalies from the admin without coding.
+- Operators can pause voting, trigger aggregation, reset credits, and resolve anomalies from the admin without coding.
 - Spotlight revenue is clearly separated from editorial ranking.
 
 ---

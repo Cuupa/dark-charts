@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { assertNoVoteConflicts } from '@/lib/vote-conflicts';
 import { assertReleasesNotVoteBlocked } from '@/lib/vote-anomaly-guard';
 import { submitFanBulkVotes } from '@/lib/api/fan-vote';
+import { isReleaseEligibleForVoting } from '@/lib/voting-eligibility';
 
 const bodySchema = z.object({
   type: z.literal('bulk').optional(),
@@ -88,12 +89,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     if (!fanProfile) throw new ApiError(404, 'Fan profile not found');
 
     const startOfWeek = getStartOfWeek();
+    const weekStartIso = startOfWeek.toISOString();
 
     const { count: weeklyVoteCount, error: weeklyCountError } = await supabase
       .from('votes')
       .select('*', { count: 'exact', head: true })
       .eq('fanId', fanProfile.id)
-      .gte('createdAt', startOfWeek.toISOString());
+      .eq('weekStart', weekStartIso);
 
     if (weeklyCountError) throw new ApiError(500, weeklyCountError.message);
     if ((weeklyVoteCount ?? 0) > 0) {
@@ -103,13 +105,16 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     const releaseIds = entries.map(([rId]) => rId);
     const { data: visibleReleases, error: releaseError } = await supabase
       .from('releases')
-      .select('id')
+      .select('id, releaseDate')
       .in('id', releaseIds)
       .eq('isVisible', true);
 
     if (releaseError) throw new ApiError(500, releaseError.message);
     if ((visibleReleases ?? []).length !== releaseIds.length) {
       throw new ApiError(400, 'One or more releases are not available for voting');
+    }
+    if (!(visibleReleases ?? []).every((release) => isReleaseEligibleForVoting(release.releaseDate))) {
+      throw new ApiError(400, 'One or more releases are outside the voting window', 'RELEASE_NOT_ELIGIBLE');
     }
 
     await assertNoVoteConflicts(supabase, userId, releaseIds);
@@ -120,6 +125,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       fanProfile,
       votes,
       creditBudget,
+      weekStart: startOfWeek,
     });
 
     const response = NextResponse.json({
@@ -157,7 +163,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     const releaseIds = entries.map(([rId]) => rId);
     const { data: visibleReleases, error: releaseError } = await supabase
       .from('releases')
-      .select('id')
+      .select('id, releaseDate')
       .in('id', releaseIds)
       .eq('isVisible', true);
 
@@ -165,15 +171,20 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     if ((visibleReleases ?? []).length !== releaseIds.length) {
       throw new ApiError(400, 'One or more releases are not available for voting');
     }
+    if (!(visibleReleases ?? []).every((release) => isReleaseEligibleForVoting(release.releaseDate))) {
+      throw new ApiError(400, 'One or more releases are outside the voting window', 'RELEASE_NOT_ELIGIBLE');
+    }
 
     await assertNoVoteConflicts(supabase, userId, releaseIds);
     await assertReleasesNotVoteBlocked(supabase, releaseIds, startOfWeek.toISOString());
+
+    const weekStartIso = startOfWeek.toISOString();
 
     await supabase
       .from('expert_votes')
       .delete()
       .eq('djId', djProfile.id)
-      .gte('createdAt', startOfWeek.toISOString());
+      .eq('weekStart', weekStartIso);
 
     const createdVotes = [];
     for (const [rId, voteRank] of entries) {
@@ -184,6 +195,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
           releaseId: rId,
           rank: voteRank,
           rating: voteRank,
+          weekStart: weekStartIso,
         })
         .select()
         .single();
@@ -205,23 +217,28 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const { data: release } = await supabase
     .from('releases')
-    .select('id')
+    .select('id, releaseDate')
     .eq('id', releaseId)
     .eq('isVisible', true)
     .maybeSingle();
 
   if (!release) throw new ApiError(404, 'Release not found');
+  if (!isReleaseEligibleForVoting(release.releaseDate)) {
+    throw new ApiError(400, 'Release is outside the voting window', 'RELEASE_NOT_ELIGIBLE');
+  }
   if (rank === undefined) throw new ApiError(400, 'rank is required for DJ role');
 
   await assertNoVoteConflicts(supabase, userId, [releaseId]);
   await assertReleasesNotVoteBlocked(supabase, [releaseId], startOfWeek.toISOString());
+
+  const weekStartIso = startOfWeek.toISOString();
 
   const { data: existingExpertVoteWithRank } = await supabase
     .from('expert_votes')
     .select('*')
     .eq('djId', djProfile.id)
     .eq('rank', rank)
-    .gte('createdAt', startOfWeek.toISOString())
+    .eq('weekStart', weekStartIso)
     .maybeSingle();
 
   if (
@@ -236,6 +253,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     .select('*')
     .eq('djId', djProfile.id)
     .eq('releaseId', releaseId)
+    .eq('weekStart', weekStartIso)
     .maybeSingle();
 
   let updatedExpertVote;
@@ -256,6 +274,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
         releaseId,
         rank,
         rating: rank,
+        weekStart: weekStartIso,
       })
       .select()
       .single();

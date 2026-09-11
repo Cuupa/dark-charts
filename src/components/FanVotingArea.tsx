@@ -159,7 +159,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
     return (
       <Card className="bg-card border border-border p-12 text-center">
         <p className="font-ui text-sm uppercase tracking-[0.2em] text-muted-foreground">
-          {t?.('voting.alreadyVoted') || 'You have already submitted your vote this week.'}
+          {t('voting.alreadyVoted')}
         </p>
       </Card>
     );
@@ -171,10 +171,10 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="display-font text-4xl uppercase tracking-wider text-foreground font-semibold mb-2">
-              {t?.('voting.title') || 'Voting Area'}
+              {t('voting.title')}
             </h1>
             <p className="font-ui text-sm text-muted-foreground">
-              {t?.('voting.description') || 'Use quadratic voting to support your favorite tracks'}
+              {t('voting.description')}
             </p>
           </div>
           <TooltipProvider>
@@ -186,8 +186,8 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
               </TooltipTrigger>
               <TooltipContent className="max-w-sm" side="left">
                 <p className="font-ui text-xs leading-relaxed whitespace-pre-line">
-                  <strong>{t?.('voting.quadraticVoting') || 'Quadratic Voting'}:</strong><br/>
-                  {t?.('voting.quadraticInfo') || `You have ${creditBudget} credits to allocate`}
+                  <strong>{t('voting.quadraticVoting')}:</strong><br/>
+                  {t('voting.quadraticInfo')}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -205,7 +205,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                   {remainingCredits}
                 </div>
                 <div className="font-ui text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  {t?.('voting.creditsRemaining') || 'Credits Remaining'}
+                  {t('voting.creditsRemaining')}
                 </div>
               </div>
             </div>
@@ -219,7 +219,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                   {totalCost}
                 </div>
                 <div className="font-ui text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  {t?.('voting.totalCostSpent') || 'Total Cost Spent'}
+                  {t('voting.totalCostSpent')}
                 </div>
               </div>
             </div>
@@ -233,7 +233,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                   {daysUntilPublish}
                 </div>
                 <div className="font-ui text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  {t?.('voting.daysUntilCharts') || 'Days Until Charts'}
+                  {t('voting.daysUntilCharts')}
                 </div>
               </div>
             </div>
@@ -249,7 +249,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
             />
             <Input
-              placeholder={t?.('voting.search') || 'Search tracks or artists...'}
+              placeholder={t('voting.search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 font-ui"
@@ -261,7 +261,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
             disabled={selectedGenres.length === 0}
             className="font-ui uppercase tracking-wider"
           >
-            {t?.('voting.clearFilters') || 'Clear Filters'}
+            {t('voting.clearFilters')}
           </Button>
         </div>
 
@@ -269,7 +269,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="font-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">
-                {t?.('voting.filterGenres') || 'Filter by Genre'}
+                {t('voting.filterGenres')}
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -346,7 +346,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                           <div className="flex flex-wrap gap-1">
                             {isVoteBlocked && (
                               <Badge variant="outline" className="font-ui text-[9px] uppercase tracking-wider border-amber-500/50 text-amber-500">
-                                {t('voting.integrityReview') || 'Integritätsprüfung'}
+                                {t('voting.integrityReview')}
                               </Badge>
                             )}
                             {track.genres.slice(0, 3).map(genre => (
@@ -427,7 +427,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
       {filteredTracks.length === 0 && (
         <Card className="bg-card border border-border p-12 text-center">
           <p className="font-ui text-sm uppercase tracking-[0.2em] text-muted-foreground">
-            {t?.('voting.noTracksFound') || 'No tracks found matching your filters'}
+            {t('voting.noTracksFound')}
           </p>
         </Card>
       )}
@@ -490,15 +490,15 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                     const errData = await res.json().catch(() => ({}));
                     if (res.status === 409) {
                       setHasVoted(true);
-                      toast.error('Du hast diese Woche bereits abgestimmt.');
+                      toast.error(t('voting.alreadyVoted'));
                       if (onVoteComplete) onVoteComplete();
                       return;
                     }
                     if (res.status === 403 && errData.code === 'RELEASE_VOTE_SUSPENDED') {
-                      toast.error('Abstimmung für mindestens einen Track ist vorübergehend gesperrt (Integritätsprüfung).');
+                      toast.error(t('error.RELEASE_VOTE_SUSPENDED'));
                       return;
                     }
-                    throw new Error(errData.error || errData.message || 'Failed to submit votes');
+                    throw new Error(errData.code ? t(`error.${errData.code}`) : t('voting.submitFailed'));
                   }
 
                   const result = await res.json();
@@ -506,14 +506,14 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                     setServerRemainingCredits(result.remainingCredits);
                   }
                   setHasVoted(true);
-                  toast.success("Abstimmung erfolgreich eingereicht");
+                  toast.success(t('voting.submitSuccess'));
                   if (onVoteComplete) {
                     onVoteComplete();
                   }
 
                 } catch (error) {
                   logger.error('Error submitting votes:', error);
-                  toast.error("Fehler beim Senden der Abstimmung. Seite wird neu geladen.");
+                  toast.error(t('error.submitFailed'));
                   setTimeout(() => window.location.reload(), 2000); // Revert optimistic UI by reloading
                 }
               }}

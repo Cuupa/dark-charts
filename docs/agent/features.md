@@ -9,26 +9,29 @@ The Dark Charts product surface — pillars, voting, taxonomy, revenue isolation
 | Pillar | Algorithm | Route | Service |
 |--------|-----------|-------|---------|
 | Fan | Quadratic Voting + trust weight | `/charts/fan` | `src/lib/math/quadratic.ts`, `fan-scoring.ts` |
-| Expert | Bayesian ranking + reputation | `/charts/expert` | `src/lib/math/expert-ranking.ts` |
-| Streaming | Loyalty quotient (Spotify/YouTube 85/15) | `/charts/streaming` | `StreamingChartCalculationService.ts` |
-| Combined | Weighted merge | `/charts` | `ChartAggregationService.ts` |
+| Expert (Club) | Rank points × reputation, shrunk toward weekly prior | `/charts/club` | `src/lib/math/expert-ranking.ts` |
+| Combined | Fan + expert weighted merge | `/` | `ChartAggregationService.ts` |
 
-`/charts/archive` + `/history` expose rolling weekly arcs. Anomalies (`vote-anomaly.ts` / `vote-anomaly-guard.ts`) flag unusual vote velocity; a high-severity unresolved anomaly blocks voting on the affected release (`/api/vote/blocked-releases`).
+Public ranking pillars are **Fan** and **Club**. **Streaming** is a separate popularity view at `/charts/streaming` (Spotify 85% + YouTube 15% on stored snapshots). It is **not** unique listeners and is **not** merged into overall (`normalizeHybridWeights`). Snapshots are ingested Sunday 22:00 UTC (`/api/cron/streaming-snapshots`) before aggregation. Expert ranking is a 10/8/6/4/2/1 points table times reputation, then shrunk toward the weekly mean (`shrinkExpertScores`, prior strength 5).
+
+`/charts/archive` and `/history` both read weekly `chart_entries` (same archive UI). Anomalies (`vote-anomaly.ts` / `vote-anomaly-guard.ts`) flag unusual vote velocity; a high-severity unresolved anomaly blocks voting on the affected release (`/api/vote/blocked-releases`).
 
 ## Quadratic Voting
 
-- Fans receive a periodic `voice credits` budget (`src/lib/math/quadratic.ts`); cost = votes². Concentrating votes on one release is expensive, so breadth is rewarded.
+- Fans receive a **weekly** `voice credits` budget (`src/lib/math/quadratic.ts`); cost = votes². Concentrating votes on one release is expensive, so breadth is rewarded. Credits reset after weekly aggregation and again Monday 00:00 UTC (`/api/cron/reset-credits`) so a missed aggregation still refreshes the budget.
+- Each ballot is stored with `weekStart`. Unique key is `(fanId, releaseId, weekStart)` — previous weeks are kept.
+- The voting pool is visible releases from the last 12 months (`eligible=1` on `/api/releases`).
 - Trust levels (`src/lib/trust-level.ts`) scale weight: unverified email `0.1`, verified `0.5`, OAuth `1.0`, OAuth + listening history `1.25`.
 - Voting requires email verification (OAuth flows excepted) — `requireVerifiedVoter` (403 `EMAIL_NOT_VERIFIED`).
 - Vote receipt + status endpoints: `/api/vote/receipt`, `/api/vote/status`.
 
 ## Expert voting
 
-Verified DJs/curators submit top-N bulk votes. A Bayesian prior keeps a single 5-star outlier from outranking a large consensus; reputation weights reward DJs whose picks later chart (`expert-ranking.ts`).
+Verified DJs/curators submit a top-10 bulk ballot (`expert_votes`, also keyed by `weekStart`). Points are 10/8/6/4/2/1 × `dj_profiles.reputationScore`, then shrunk toward the weekly prior. Reputation is updated after aggregation: last week’s expert ballot vs this week’s Fan Top 20 (`updateDjReputationsFromLaterCharts`). DJs request access via `POST /api/dj/apply` (`expertRequested`); admins grant `expertStatus`. Public ranking: `/djs` and `/djs/[id]` (display name from `dj_profiles.displayName`; no emails). BAND/LABEL cannot vote in this pool. Labels manage a roster via `GET/POST /api/label/roster` (`artists.labelId`); roster links never affect rankings.
 
 ## Streaming calculation
 
-Spotify + YouTube are merged 85/15 and normalised by a loyalty quotient (streams ÷ unique listeners) so dedicated fan bases beat algorithmic background plays (`StreamingChartCalculationService.ts`).
+Public route `/charts/streaming`. Weekly snapshots (`streaming_snapshots`) from Spotify popularity/followers and optional YouTube subscriber score. Combined overall still ignores streaming. Empty weeks stay empty (no iTunes fallback).
 
 ## Genre taxonomy
 
@@ -36,7 +39,7 @@ SSOT `src/lib/config/genres.ts` — `Gothic`, `Metal`, `Dark Electro`, `Crossove
 
 ## Custom charts
 
-`/custom-charts` — fans weight the three pillars (e.g. 50/30/20) to build a personalised discovery list (`ChartShellClient`, `HomeChartsView`).
+`/custom-charts` — fans weight fan vs expert (streaming slider is cosmetic / renormalized to 0) to build a personalised discovery list (`ChartShellClient`, `HomeChartsView`).
 
 ## Spotlight (revenue — isolated)
 
@@ -47,7 +50,7 @@ Self-service promotional placement (Band of the Week, sponsors, subgenre headers
 
 ## Badges & promotions
 
-- Badges (`BadgeService`, `BadgeDefinitions`) reward community behaviour (e.g. “Early Adopter” for discovering a band before it charts).
+- Badges (`BadgeDefinitions`) reward community behaviour. Weekly cron `/api/cron/evaluate-badges` (Monday 00:15 UTC) awards Thronwächter, Dauergast, and Genre-Scout from last week’s fan ballots. Admin can still award manually.
 - Promotions (`PromotionService`) manage curated feature surfaces, reviewed in `/admin/promotions`.
 
 ## Roles
@@ -65,6 +68,13 @@ Self-service promotional placement (Band of the Week, sponsors, subgenre headers
 - **Chart Control** — pause/resume voting, trigger weekly recalc.
 - **Anomalies** — review aggregation anomalies; block/unblock releases.
 - **Settings** — chart weights and the fan credit budget.
+
+## Public catalog
+
+- `/artist/[id]` and `/release/[id]` — SSR pages for visible catalog rows (`src/lib/api/public-catalog.ts`).
+- `/search` — public catalog search (`GET /api/catalog/search`).
+- Chart titles link to the release page.
+- Band claiming: `band_profiles.artistId` is nullable until `POST /api/band/claim`; unique when set; sets `artists.verified`.
 
 ## Catalog & media
 

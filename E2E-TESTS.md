@@ -22,7 +22,7 @@ Update the checkboxes as work lands; don't let this drift from reality.
 ## Phase 1 — E2E foundation (planned)
 
 - [ ] Add `@playwright/test` + `playwright.config.ts` (projects: Desktop Chrome, Mobile Safari/Chrome)
-- [ ] Local DB: Supabase CLI local stack (`supabase start`), apply `reset.sql` + incremental `migrations/`
+- [ ] Local DB: Supabase CLI local stack (`supabase start`), apply `reset.sql` only
 - [ ] `.env.e2e` document (generated locally; never committed)
 - [ ] Auth fixtures via GoTrue admin API (service-role), not raw SQL
 - [ ] `workers: 1` for DB-backed runs; prefixed `e2e-<testId>` identifiers + cleanup

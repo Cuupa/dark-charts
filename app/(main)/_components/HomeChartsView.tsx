@@ -46,17 +46,89 @@ export function HomeChartsView() {
   );
 }
 
+function StreamingPillarList() {
+  const { t } = useLanguage();
+  const [tracks, setTracks] = useState<import('@/types').Track[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/charts?type=streaming&completed=true&limit=50')
+      .then((res) => res.json())
+      .then((data: { entries?: Array<{ id: string; placement: number; movement: number | null; release?: { id: string; title: string; itunesArtworkUrl: string | null; vercelBlobUrl: string | null; artist?: { name: string; genres: string[] | null } | null } | null }> }) => {
+        if (cancelled) return;
+        const mapped = (data.entries ?? []).map((entry) => ({
+          id: entry.release?.id || entry.id,
+          rank: entry.placement,
+          artist: entry.release?.artist?.name || t('chart.unknownArtist'),
+          title: entry.release?.title || t('chart.unknownTitle'),
+          genres: (entry.release?.artist?.genres || []) as import('@/types').Genre[],
+          movement: entry.movement ?? 0,
+          chartType: 'streaming' as const,
+          albumArt: entry.release?.itunesArtworkUrl || entry.release?.vercelBlobUrl || undefined,
+          votes: 0,
+        }));
+        setTracks(mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setTracks([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
+
+  return (
+    <div className="space-y-6">
+      <ErrorBoundary level="component">
+        <Card className="bg-card border border-border">
+          <div className="p-4 border-b border-border space-y-1">
+            <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
+              {t('pillar.streaming')}
+            </h2>
+            <p className="font-ui text-xs text-muted-foreground">{t('chart.streamingNote')}</p>
+          </div>
+          {isLoading ? (
+            <div>
+              {Array.from({ length: 10 }).map((_, index) => (
+                <ChartEntrySkeleton key={index} index={index} />
+              ))}
+            </div>
+          ) : tracks.length === 0 ? (
+            <p className="p-6 text-sm text-muted-foreground">{t('chart.streamingEmpty')}</p>
+          ) : (
+            tracks.map((track, index) => (
+              <ChartEntry key={track.id} track={track} index={index} />
+            ))
+          )}
+        </Card>
+      </ErrorBoundary>
+    </div>
+  );
+}
+
 interface PillarChartListProps {
-  pillar: 'fan' | 'club';
+  pillar: 'fan' | 'club' | 'streaming';
 }
 
 const PILLAR_CONFIG = {
-  fan: { title: 'Fan Charts', tracksKey: 'filteredFanCharts' as const },
-  club: { title: 'Club Charts', tracksKey: 'filteredExpertCharts' as const },
+  fan: { titleKey: 'pillar.fan' as const, tracksKey: 'filteredFanCharts' as const },
+  club: { titleKey: 'pillar.club' as const, tracksKey: 'filteredExpertCharts' as const },
 };
 
 export function PillarChartList({ pillar }: PillarChartListProps) {
+  if (pillar === 'streaming') {
+    return <StreamingPillarList />;
+  }
+  return <VotePillarList pillar={pillar} />;
+}
+
+function VotePillarList({ pillar }: { pillar: 'fan' | 'club' }) {
   const shell = useChartShell();
+  const { t } = useLanguage();
   const config = PILLAR_CONFIG[pillar];
   const tracks = shell[config.tracksKey];
   const { isLoading, handleTrackClick } = shell;
@@ -67,7 +139,7 @@ export function PillarChartList({ pillar }: PillarChartListProps) {
         <Card className="bg-card border border-border">
           <div className="p-4 border-b border-border">
             <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
-              {config.title}
+              {t(config.titleKey)}
             </h2>
           </div>
           {isLoading ? (

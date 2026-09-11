@@ -62,7 +62,7 @@ Navigate to `/admin`. If not authenticated you will be redirected to `/login?ret
 
 ## Chart ops (operator-facing)
 
-- **Weekly aggregation** runs via Vercel cron (`/api/cron/aggregate-charts`, `55 23 * * 0`). Review resulting anomalies under **Anomalies**; unresolved high-severity anomalies keep voting blocked on affected releases.
+- **Weekly aggregation** runs via Vercel cron (`/api/cron/aggregate-charts`, `55 23 * * 0`). Fan credits also reset Monday 00:00 UTC (`/api/cron/reset-credits`) if Sunday aggregation did not run. Review resulting anomalies under **Anomalies**; unresolved high-severity anomalies keep voting blocked on affected releases.
 - **Voting pause** in **Chart Control** freezes fan/expert submissions for a window.
 - **Sync** — manual artist sync and the durable `sync_queue` drain are documented in [DEPLOYMENT.md](DEPLOYMENT.md) and [docs/agent/backend.md](docs/agent/backend.md). The dashboard surfaces queue health; it never asks operators to configure infra.
 

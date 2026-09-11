@@ -1,14 +1,25 @@
 # Pre-Release QA Checklist — Dark Charts
 
 ## Functional Tests
-- [ ] Public routes load: `/`, `/charts/[pillar]`, `/charts/archive`, `/history`, `/genre/[main]`, `/custom-charts`, `/methodology`, `/spotlight`, `/about`, `/imprint`, `/privacy`, `/terms`
-- [ ] Chart pillars render correct data for a seeded week (Fan / Expert / Streaming / Combined)
+- [ ] Public routes load: `/`, `/charts/[pillar]`, `/charts/archive`, `/history`, `/genre/[main]`, `/custom-charts`, `/methodology`, `/spotlight`, `/about`, `/imprint`, `/privacy`, `/terms`, `/search`, `/artist/[id]`, `/release/[id]`
+- [ ] Chart pillars render correct data for a seeded week (Fan / Club / Combined); empty weeks show empty, not demo tracks
+- [ ] `/charts/streaming` shows snapshot-based popularity or empty — never iTunes/mock stand-ins; overall stays fan+club only
 - [ ] Genre pages: main genre lists subgenres; subgenre page filters correctly (niche windows applied)
 - [ ] Methodology page explains the weighted merge and pillar isolation
 - [ ] Voting: verified voter can cast votes; cost rises quadratically; receipt + confirmation render
+- [ ] Voting: a second week’s ballot on the same release does not overwrite last week’s row
+- [ ] Voting: releases older than 12 months are rejected (`RELEASE_NOT_ELIGIBLE`) and omitted from the pool
+- [ ] `/history` and `/charts/archive` show the same weekly `chart_entries` data
 - [ ] Voting: unverified email is rejected (403 `EMAIL_NOT_VERIFIED`)
 - [ ] Voting: a release blocked by a high-severity anomaly cannot receive votes (`/api/vote/blocked-releases`)
 - [ ] Custom charts builder: weights persist and produce a personalised list
+- [ ] Search returns visible artists/releases; hidden catalog rows stay hidden
+- [ ] `/djs` lists verified Club DJs by reputation and never shows emails
+- [ ] `/djs/[id]` 404s for non-experts; DJs can set a public display name
+- [ ] Band account can claim an unclaimed visible artist once; second claim is rejected
+- [ ] Label can add an unclaimed visible artist to its roster; another label’s artist is rejected; roster is not a ranking signal
+- [ ] Club chart: a one-vote outlier ranks below a broad DJ consensus after shrinkage
+- [ ] DJ can request expert access; admin grant clears the request and unlocks Club voting
 - [ ] Spotlight: availability lists bookable slots; Stripe checkout completes; webhook creates the booking
 - [ ] Spotlight booking never appears in any ranking pillar
 - [ ] `/api/v1/*` returns charts/artists/categories/search/overview with a valid Bearer token
@@ -32,12 +43,15 @@
 - [ ] Role changes affect access immediately (no re-login needed)
 
 ## Database & Sync
-- [ ] Schema parity: `reset.sql` bootstrap + `migrations/` + `src/types/database.ts` in sync
+- [ ] Schema parity: `reset.sql` (only SQL) + `src/types/database.ts` in sync; no `supabase/migrations/`
 - [ ] Durable sync queue drains; `sync_queue` / `sync_logs` populated
 - [ ] Darktunes import + scene-artist CSV seed produce visible releases/artists
 - [ ] R2 cover-art cache: artwork lands on CDN; fallback to external URL on failure
 - [ ] `POST /api/sync` (with `CRON_SECRET`) drains the queue; `/api/sync/queue` enqueues
 - [ ] `/api/cron/aggregate-charts` runs and produces anomalies (if any)
+- [ ] `/api/cron/reset-credits` (Monday) restores `fan_profiles.remainingCredits` to the budget
+- [ ] `/api/cron/evaluate-badges` awards Thronwächter / Dauergast / Genre-Scout for the completed week
+- [ ] `/api/cron/purge-inactive` does not delete admins or users with votes/bookings in the last 24 months
 
 ## Accessibility (WCAG 2.1 AA)
 - [ ] Keyboard-only navigation across public journeys

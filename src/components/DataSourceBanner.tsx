@@ -2,10 +2,12 @@
 
 import { Info, Warning } from '@phosphor-icons/react';
 import { useDataService } from '@/contexts/DataContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ApiDataService } from '@/services/apiDataService';
 
 export function DataSourceBanner() {
   const dataService = useDataService();
+  const { t } = useLanguage();
 
   if (!(dataService instanceof ApiDataService)) return null;
 
@@ -18,12 +20,10 @@ export function DataSourceBanner() {
         <Info size={20} weight="fill" className="shrink-0 mt-0.5 text-primary" aria-hidden />
         <div>
           <p className="font-ui font-semibold uppercase tracking-wider text-xs text-primary">
-            iTunes-Vorschau
+            {t('demo.itunesTitle')}
           </p>
           <p className="font-ui text-xs text-muted-foreground mt-1 leading-relaxed">
-            Die Charts werden aus den neuesten Releases der Dark-Charts-Künstlerliste per iTunes
-            geladen. Sobald die Datenbank konfiguriert ist, ersetzen Live-Abstimmungen diese
-            Vorschau.
+            {t('demo.itunesBody')}
           </p>
         </div>
       </div>
@@ -40,11 +40,10 @@ export function DataSourceBanner() {
       <Warning size={20} weight="fill" className="shrink-0 mt-0.5" aria-hidden />
       <div>
         <p className="font-ui font-semibold uppercase tracking-wider text-xs text-amber-300">
-          Demo-Daten
+          {t('demo.mockTitle')}
         </p>
         <p className="font-ui text-xs text-amber-100/90 mt-1 leading-relaxed">
-          Es sind noch keine Live-Chart-Daten verfügbar. Die angezeigten Rankings sind Beispieldaten
-          und spiegeln keine echten Abstimmungen wider.
+          {t('demo.mockBody')}
         </p>
       </div>
     </div>

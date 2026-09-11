@@ -72,7 +72,7 @@ function buildProfileFromRole(data: any): UserProfile | undefined {
     return {
       userType: 'dj',
       id: user.djProfile.id,
-      username: user.email?.split('@')[0] ?? 'DJ',
+      username: user.djProfile.displayName || user.email?.split('@')[0] || 'DJ',
       biography: user.djProfile.bio ?? '',
       externalLinks: [],
       displayedBadges: [],
@@ -80,6 +80,9 @@ function buildProfileFromRole(data: any): UserProfile | undefined {
       isPublicProfile: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      expertStatus: user.djProfile.expertStatus,
+      expertRequested: user.djProfile.expertRequested,
+      reputation: Number(user.djProfile.reputationScore ?? 1),
     } as any;
   }
 
