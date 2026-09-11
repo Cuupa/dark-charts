@@ -26,5 +26,9 @@ describe('public chart copy', () => {
     expect(messages.de['pillar.fanLead'].length).toBeGreaterThan(60);
     expect(messages.de['voting.description']).not.toMatch(/Hau rauf/i);
     expect(messages.de['methodology.lead']).not.toMatch(/Kein Deal/i);
+    expect(messages.de['about.principle3']).not.toMatch(/steht offen da/i);
+    expect(messages.de['about.clubChartsText']).not.toMatch(/kippt die Woche/i);
+    expect(messages.de['methodology.fanDetail'].length).toBeGreaterThan(80);
+    expect(messages.de['methodology.clubDetail'].length).toBeGreaterThan(80);
   });
 });

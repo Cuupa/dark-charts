@@ -30,7 +30,7 @@ export function HybridChartTable({
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="display-font text-2xl md:text-3xl text-foreground">
+        <h1 className="display-font text-2xl md:text-3xl leading-tight text-foreground">
           {t('chart.hybridTitle')} — KW {weekNumber}/{year}
         </h1>
         <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">

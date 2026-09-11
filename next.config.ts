@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: '/charts/expert', destination: '/charts/club', permanent: true },
-      { source: '/charts/streaming', destination: '/', permanent: true },
     ];
   },
   images: {

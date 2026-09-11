@@ -71,11 +71,12 @@ interface ChartShellClientProps {
   visibleTracks?: Track[];
 }
 
-type ActivePillarView = 'overview' | 'fan' | 'club';
+type ActivePillarView = 'overview' | 'fan' | 'club' | 'streaming';
 
 function resolveActivePillar(pathname: string): ActivePillarView {
   if (pathname === '/charts/fan') return 'fan';
   if (pathname === '/charts/club' || pathname === '/charts/expert') return 'club';
+  if (pathname === '/charts/streaming') return 'streaming';
   return 'overview';
 }
 

@@ -78,12 +78,12 @@ export function PillarNavigation({
             </div>
           ) : (
             <div className="flex items-center justify-center gap-0">
-              <div className="inline-flex border border-border w-full md:w-auto overflow-hidden">
+              <div className="inline-flex border border-border w-full md:w-auto">
                 {pillars.map((pillar) =>
                   renderPillar(
                     pillar,
                     cn(
-                      'flex-1 md:flex-none px-4 md:px-8 py-3 font-ui text-xs uppercase tracking-[0.2em] font-bold snap-transition border-r last:border-r-0 border-border',
+                      'flex-1 md:flex-none inline-flex items-center justify-center px-4 md:px-8 py-3 font-ui text-xs uppercase tracking-[0.2em] font-bold snap-transition border-r last:border-r-0 border-border',
                       activePillar === pillar.value
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-card text-muted-foreground hover:bg-primary/20 hover:text-foreground'

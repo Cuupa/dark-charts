@@ -1,13 +1,15 @@
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Info, Skull, User as UserIcon, ChartBar, Scales } from '@phosphor-icons/react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ROUTES } from '@/lib/routes';
 
 export function AboutView() {
   const { t } = useLanguage();
 
   return (
     <div className="space-y-6">
-      <h1 className="display-font text-4xl uppercase tracking-wider text-foreground font-semibold">
+      <h1 className="display-font text-4xl uppercase tracking-wider leading-tight text-foreground font-semibold">
         {t('about.title')}
       </h1>
 
@@ -123,6 +125,12 @@ export function AboutView() {
                 <span>{t('about.principle5')}</span>
               </li>
             </ul>
+            <Link
+              href={ROUTES.methodology}
+              className="inline-block mt-4 text-sm text-primary hover:underline"
+            >
+              {t('about.methodologyCta')} →
+            </Link>
           </div>
         </div>
       </Card>

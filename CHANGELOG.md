@@ -17,6 +17,8 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Voting pool filter: visible releases from the last 12 months (`eligible=1` on `/api/releases`).
 
 ### Changed
+- `/charts/streaming` is a real pillar again (the old redirect to `/` is gone). iTunes demo data no longer fills streaming with Fan entries.
+- Public ranking copy is spoken German/English; the methodology page has the full voting rules (points cost, Club top 10, trust, why streaming stays separate).
 - Public pages share one content shell (`max-w-7xl`, `px-4 md:px-8 py-8`) so margins are consistent; duplicate `#main-content` ids and empty music-player bar are gone.
 - Public CI aligned with live darkTunes.com: `#0d0d1a` / `#6d28d9` / `#9333ea`, Orbitron + Exo 2, wordmark header, quieter chart rows (no CRT scanlines).
 - Public copy rewritten warm and plain: Fan / Club / Overall / Streaming names, with visible explanations of how the charts work (no club-announcer bark, no quadratic/Sybil jargon). UI strings go through `src/i18n/messages.ts` + `t(key, vars)`; language cookie `lang` (default `de`).
