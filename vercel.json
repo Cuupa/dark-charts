@@ -25,6 +25,10 @@
       "schedule": "0 22 * * 0"
     },
     {
+      "path": "/api/cron/aggregate-airplay",
+      "schedule": "50 23 * * 0"
+    },
+    {
       "path": "/api/cron/aggregate-charts",
       "schedule": "55 23 * * 0"
     },

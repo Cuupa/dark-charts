@@ -17,7 +17,7 @@ import { getItunesChartResponse } from '@/lib/charts/itunesChartFallback';
 import { logger } from '@/lib/logger';
 
 const querySchema = z.object({
-  type: z.enum(['fan', 'expert', 'streaming', 'combined']),
+  type: z.enum(['fan', 'expert', 'streaming', 'combined', 'airplay']),
   limit: z
     .string()
     .optional()
@@ -33,7 +33,7 @@ const querySchema = z.object({
 });
 
 async function fetchChartsFromDatabase(
-  type: 'fan' | 'expert' | 'streaming' | 'combined',
+  type: 'fan' | 'expert' | 'streaming' | 'combined' | 'airplay',
   limitNum: number,
   completed: boolean | undefined,
   genre: string | undefined,
@@ -146,7 +146,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     logger.warn('Database chart fetch failed, falling back to iTunes', { error });
   }
 
-  if (type === 'streaming') {
+  if (type === 'streaming' || type === 'airplay') {
     const empty = NextResponse.json({
       success: true,
       chartType: type,

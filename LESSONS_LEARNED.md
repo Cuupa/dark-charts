@@ -42,6 +42,12 @@ Distilled anti-patterns from project history. **Append session findings before o
 
 ## Session additions
 
+### 2026-09-11 — Playlist/airplay is not a Combined weight
+
+**Symptom:** PR #47 added an `airplay` term to the combined score (default 0) plus a `supabase/migrations/` file and Prisma models.
+**Cause:** Tracker foundation was copied as a fourth ranking pillar; playlist adds can be bought.
+**Rule / Fix:** Airplay stays a separate `chartType` like streaming. Schema only in `reset.sql`. No Prisma. Do not parse an `airplay` chart weight into Combined.
+
 ### 2026-09-11 — Schema is one idempotent script
 
 **Symptom:** Incremental `supabase/migrations/*.sql` drifted from `reset.sql` and duplicated policy.

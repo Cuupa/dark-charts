@@ -5,6 +5,7 @@ All notable changes to this project are documented here. Format follows [Keep a 
 ## [Unreleased]
 
 ### Added
+- Airplay tracker foundation: `tracked_playlists`, `radio_stations`, `airplay_events`, `airplay_snapshots` in `reset.sql`; Sunday 23:50 UTC rollup (`/api/cron/aggregate-airplay`). Writes `chartType=airplay` when snapshots exist. Never merged into Combined (playlist pitching is a paid-adjacent signal).
 - Label roster on the profile (`/api/label/roster`); `artists.labelId` links do not affect rankings.
 - Public Club DJ ranking at `/djs` and profiles at `/djs/[id]` (display name, no emails).
 - Weekly fan badge evaluation (`/api/cron/evaluate-badges`) and 24-month inactive account purge (`/api/cron/purge-inactive`).

@@ -62,6 +62,7 @@ Register in Stripe Dashboard:
 | `0 3 * * 1` | `/api/sync/queue` | Weekly enqueue of all visible artists |
 | `0 4 * * *` | `/api/cron/sync-itunes-artwork` | Backfill missing R2 covers |
 | `0 22 * * 0` | `/api/cron/streaming-snapshots` | Spotify/YouTube popularity snapshots for the current ISO week |
+| `50 23 * * 0` | `/api/cron/aggregate-airplay` | Roll `airplay_events` into `airplay_snapshots` (does not affect Combined) |
 | `55 23 * * 0` | `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection + credit reset |
 | `0 0 * * 1` | `/api/cron/reset-credits` | Monday fan credit refresh (runs even if Sunday aggregation failed) |
 | `15 0 * * 1` | `/api/cron/evaluate-badges` | Award weekly fan badges for the completed ISO week |

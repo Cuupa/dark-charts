@@ -33,6 +33,7 @@ Protected by `CRON_SECRET` via `src/lib/cronAuth.ts`. Schedules in `vercel.json`
 | `/api/sync/queue` | Enqueue all visible artists |
 | `/api/cron/sync-itunes-artwork` | R2 cover backfill |
 | `/api/cron/streaming-snapshots` | Sunday 22:00 UTC Spotify/YouTube snapshot ingest |
+| `/api/cron/aggregate-airplay` | Sunday 23:50 UTC airplay event rollup → `airplay_snapshots` |
 | `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection + credit reset |
 | `/api/cron/reset-credits` | Monday credit refresh (safety net if aggregation did not run) |
 | `/api/cron/evaluate-badges` | Monday fan badge awards for the completed ISO week |
