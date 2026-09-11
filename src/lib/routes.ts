@@ -88,10 +88,23 @@ export function slugToSubGenre(slug: string, mainGenre?: MainGenre): Genre | nul
   return subGenres.find((g) => subGenreToSlug(g) === slug) ?? null;
 }
 
-export function pillarChartPath(pillar: PillarSlug | ChartType): string {
+export type ChartListPillar = PillarSlug | 'overview';
+
+export function pillarChartPath(pillar: PillarSlug | ChartType | 'overview'): string {
   if (pillar === 'expert') return '/charts/club';
-  if (pillar === 'overall') return ROUTES.home;
+  if (pillar === 'overall' || pillar === 'overview') return ROUTES.home;
   return `/charts/${pillar}`;
+}
+
+export function chartListPath(pillar: ChartListPillar, genre?: MainGenre | null): string {
+  const base = pillarChartPath(pillar);
+  if (!genre) return base;
+  return `${base}?genre=${mainGenreToSlug(genre)}`;
+}
+
+export function genreFromQuery(value: string | null | undefined): MainGenre | null {
+  if (!value) return null;
+  return slugToMainGenre(value);
 }
 
 export function isValidPillarSlug(slug: string): slug is PillarSlug {

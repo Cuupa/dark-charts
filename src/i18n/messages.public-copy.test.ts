@@ -31,4 +31,15 @@ describe('public chart copy', () => {
     expect(messages.de['methodology.fanDetail'].length).toBeGreaterThan(80);
     expect(messages.de['methodology.clubDetail'].length).toBeGreaterThan(80);
   });
+
+  it('does not leak spec or privacy constraints into public copy', () => {
+    const skip = /^(admin|oauth|profile|error|catalog)\./;
+    const leak = /keine e-?mails?|never e-?mails?|no e-?mails?|anzeigenamen|display names, never|sybil|quadratic|steht offen da|kippt die woche/i;
+    for (const lang of ['de', 'en'] as const) {
+      for (const [key, value] of Object.entries(messages[lang])) {
+        if (skip.test(key)) continue;
+        expect(value, `${lang} ${key}`).not.toMatch(leak);
+      }
+    }
+  });
 });

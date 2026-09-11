@@ -52,7 +52,13 @@ Chart visuals use Recharts inside client leaves (`ChartShellClient`, `HomeCharts
 
 ## i18n / legal
 
-Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`. Voice: spoken, warm, easy. Homepage stays short. Full ranking rules (points cost, Club top 10, trust, streaming isolation) live on `/methodology` only — still no quadratic/Sybil jargon. Names: Fan charts, Club charts, Overall charts, Streaming. Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
+Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`.
+
+Voice: spoken, warm, easy. Homepage stays short. Full ranking rules live on `/methodology` only. Names: Fan charts, Club charts, Overall charts, Streaming.
+
+**Spec is not UI copy.** Public strings say what the page is and what the visitor can do. Do not paste internal constraints onto the surface (API does not return emails, Sybil weights, quadratic cost, “kein Deal”). If a human would not say it at the bar, it does not belong in `messages.ts` public keys. Privacy/implementation rules stay in `docs/agent/features.md` and the API. Enforced by `src/i18n/messages.public-copy.test.ts`.
+
+Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
 
 ## Class names & layout
 
