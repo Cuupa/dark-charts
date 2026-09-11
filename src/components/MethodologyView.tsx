@@ -26,41 +26,50 @@ export function MethodologyView() {
   const pct = formatHybridWeightsPercent(weights);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8 py-8 px-4">
-      <div className="space-y-2">
+    <div className="w-full max-w-4xl mx-auto space-y-8">
+      <div className="space-y-3">
         <h1 className="font-display text-3xl uppercase text-foreground">{t('methodology.title')}</h1>
-        <p className="text-muted-foreground text-sm font-ui">{t('methodology.lead')}</p>
+        <p className="text-muted-foreground text-sm md:text-base font-ui leading-relaxed">
+          {t('methodology.lead')}
+        </p>
       </div>
 
       <Card className="p-6 bg-primary/10 border-primary/30">
         <p className="text-lg font-semibold text-foreground">
           {t('methodology.formula', { fan: pct.fan, expert: pct.expert })}
         </p>
-        <p className="text-sm text-muted-foreground mt-2">{t('methodology.noPay')}</p>
+        <p className="text-sm md:text-base text-muted-foreground mt-2 leading-relaxed">
+          {t('methodology.noPay')}
+        </p>
       </Card>
 
-      <Card className="p-6 bg-card border-border space-y-8 text-sm text-muted-foreground leading-relaxed">
-        <section>
-          <ul className="list-disc list-inside space-y-2 ml-2">
-            <li>
-              <strong className="text-foreground">{t('pillar.fan')}</strong> — {t('methodology.fan')}
-            </li>
-            <li>
-              <strong className="text-foreground">{t('pillar.club')}</strong> — {t('methodology.club')}
-            </li>
-            <li>
-              <strong className="text-foreground">{t('pillar.overall')}</strong> — {t('methodology.overall')}
-            </li>
-            <li>
-              <strong className="text-foreground">{t('djs.title')}</strong> — {t('methodology.djs')}{' '}
-              <Link href={ROUTES.djs} className="underline">
+      <Card className="p-6 bg-card border-border space-y-8 text-sm md:text-base text-muted-foreground leading-relaxed">
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-foreground font-semibold mb-1">{t('pillar.fan')}</h2>
+            <p>{t('methodology.fan')}</p>
+          </div>
+          <div>
+            <h2 className="text-foreground font-semibold mb-1">{t('pillar.club')}</h2>
+            <p>{t('methodology.club')}</p>
+          </div>
+          <div>
+            <h2 className="text-foreground font-semibold mb-1">{t('pillar.overall')}</h2>
+            <p>{t('methodology.overall')}</p>
+          </div>
+          <div>
+            <h2 className="text-foreground font-semibold mb-1">{t('djs.title')}</h2>
+            <p>
+              {t('methodology.djs')}{' '}
+              <Link href={ROUTES.djs} className="underline text-primary">
                 {t('djs.viewRanking')}
               </Link>
-            </li>
-            <li>
-              <strong className="text-foreground">{t('pillar.streaming')}</strong> — {t('methodology.streaming')}
-            </li>
-          </ul>
+            </p>
+          </div>
+          <div>
+            <h2 className="text-foreground font-semibold mb-1">{t('pillar.streaming')}</h2>
+            <p>{t('methodology.streaming')}</p>
+          </div>
         </section>
 
         <Separator />

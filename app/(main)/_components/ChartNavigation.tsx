@@ -39,7 +39,7 @@ export function ChartNavigation() {
   const activeGenre = getActiveMainGenre(pathname);
 
   return (
-    <>
+    <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-md border-b border-border">
       <ErrorBoundary level="component">
         <PillarNavigation
           activePillar={activePillar}
@@ -68,6 +68,6 @@ export function ChartNavigation() {
           className="mb-0"
         />
       </ErrorBoundary>
-    </>
+    </div>
   );
 }

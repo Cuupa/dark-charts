@@ -6,10 +6,9 @@ interface ChartCategorySkeletonProps {
 
 export function ChartCategorySkeleton({ title }: ChartCategorySkeletonProps) {
   return (
-    <div className="cyber-card relative">
-      <div className="cyber-scanline" />
+    <div className="bg-card border border-border relative">
       <div className="p-4 border-b border-border relative z-10">
-        <h2 className="cyber-hover-chromatic display-font text-xl uppercase text-foreground tracking-tight font-semibold">
+        <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
           {title}
         </h2>
       </div>
@@ -17,10 +16,9 @@ export function ChartCategorySkeleton({ title }: ChartCategorySkeletonProps) {
         {[1, 2, 3].map((i) => (
           <div 
             key={i} 
-            className="cyber-card flex items-center gap-3 p-3"
+            className="relative flex items-center gap-3 p-3 border border-border"
             style={{ animationDelay: `${i * 150}ms` }}
           >
-            <div className="cyber-scanline opacity-50" />
             
             <div className="flex items-center gap-2 min-w-[60px] relative z-10">
               <Skeleton className="w-12 h-10 bg-zinc-800/80 animate-pulse" />

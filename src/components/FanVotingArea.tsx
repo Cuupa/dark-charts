@@ -5,19 +5,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MagnifyingGlass, Info, Lightning, Coins, Calendar } from '@phosphor-icons/react';
+import { MagnifyingGlass, Lightning, Coins, Calendar } from '@phosphor-icons/react';
 import { useKV } from '@/hooks/useKV';
 import { useAuth } from '@/contexts/AuthContext';
 import { authFetch } from '@/lib/auth/client-fetch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Slider } from '@/components/ui/slider';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { VotingAreaSkeleton } from '@/components/skeletons';
@@ -166,33 +160,26 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="display-font text-4xl uppercase tracking-wider text-foreground font-semibold mb-2">
               {t('voting.title')}
             </h1>
-            <p className="font-ui text-sm text-muted-foreground">
+            <p className="font-ui text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
               {t('voting.description')}
             </p>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" className="shrink-0">
-                  <Info size={20} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm" side="left">
-                <p className="font-ui text-xs leading-relaxed whitespace-pre-line">
-                  <strong>{t('voting.quadraticVoting')}:</strong><br/>
-                  {t('voting.quadraticInfo')}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
+        <Card className="bg-card border border-border p-4 md:p-5">
+          <p className="font-ui text-sm text-foreground font-semibold mb-1">
+            {t('voting.quadraticVoting')}
+          </p>
+          <p className="font-ui text-sm text-muted-foreground leading-relaxed">
+            {t('voting.quadraticInfo')}
+          </p>
+        </Card>
 
         <Card className="bg-card border border-border p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -437,7 +424,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <div className="flex flex-col">
-              <span className="font-ui text-xs text-muted-foreground uppercase tracking-wider">Verfügbare Credits</span>
+              <span className="font-ui text-xs text-muted-foreground uppercase tracking-wider">{t('voting.creditsAvailable')}</span>
               <span className={cn(
                 "data-font text-3xl font-bold transition-colors",
                 remainingCredits === 0 ? "text-destructive" : "text-primary"
@@ -447,7 +434,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
             </div>
             <div className="h-10 w-px bg-border hidden md:block" />
             <div className="flex flex-col">
-              <span className="font-ui text-xs text-muted-foreground uppercase tracking-wider">Verbraucht</span>
+              <span className="font-ui text-xs text-muted-foreground uppercase tracking-wider">{t('voting.creditsSpent')}</span>
               <span className="data-font text-xl text-accent">
                 {totalCost}
               </span>

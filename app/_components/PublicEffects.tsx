@@ -7,9 +7,9 @@ export function PublicEffects() {
   return (
     <NavHidingWrapper>
       <VisualEffectsOverlay
-        noiseOpacity={0.03}
-        crtScanlinesEnabled
-        vignetteIntensity={0.5}
+        noiseOpacity={0.02}
+        crtScanlinesEnabled={false}
+        vignetteIntensity={0.28}
       />
     </NavHidingWrapper>
   );

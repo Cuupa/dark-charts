@@ -85,11 +85,11 @@ function StreamingPillarList() {
     <div className="space-y-6">
       <ErrorBoundary level="component">
         <Card className="bg-card border border-border">
-          <div className="p-4 border-b border-border space-y-1">
+          <div className="p-4 md:p-5 border-b border-border space-y-2">
             <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
               {t('pillar.streaming')}
             </h2>
-            <p className="font-ui text-xs text-muted-foreground">{t('chart.streamingNote')}</p>
+            <p className="font-ui text-sm text-muted-foreground leading-relaxed">{t('pillar.streamingLead')}</p>
           </div>
           {isLoading ? (
             <div>
@@ -137,10 +137,13 @@ function VotePillarList({ pillar }: { pillar: 'fan' | 'club' }) {
     <div className="space-y-6">
       <ErrorBoundary level="component">
         <Card className="bg-card border border-border">
-          <div className="p-4 border-b border-border">
+          <div className="p-4 md:p-5 border-b border-border space-y-2">
             <h2 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
               {t(config.titleKey)}
             </h2>
+            <p className="font-ui text-sm text-muted-foreground leading-relaxed">
+              {t(pillar === 'fan' ? 'pillar.fanLead' : 'pillar.clubLead')}
+            </p>
           </div>
           {isLoading ? (
             <div>

@@ -15,7 +15,7 @@ export function DataSourceBanner() {
     return (
       <div
         role="status"
-        className="mx-4 mb-4 flex items-start gap-3 rounded border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-primary-foreground"
+        className="mb-6 flex items-start gap-3 rounded border border-primary/40 bg-primary/10 px-4 py-3 text-sm text-primary-foreground"
       >
         <Info size={20} weight="fill" className="shrink-0 mt-0.5 text-primary" aria-hidden />
         <div>
@@ -35,7 +35,7 @@ export function DataSourceBanner() {
   return (
     <div
       role="status"
-      className="mx-4 mb-4 flex items-start gap-3 rounded border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
+      className="mb-6 flex items-start gap-3 rounded border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
     >
       <Warning size={20} weight="fill" className="shrink-0 mt-0.5" aria-hidden />
       <div>

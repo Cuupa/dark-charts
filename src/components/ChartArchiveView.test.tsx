@@ -224,7 +224,7 @@ describe('ChartArchiveView', () => {
       });
       renderArchive();
       await waitFor(() =>
-        expect(screen.getByText(/keine liste für diese woche/i)).toBeDefined()
+        expect(screen.getByText(/keine charts für diese woche/i)).toBeDefined()
       );
     });
   });

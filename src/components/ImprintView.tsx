@@ -11,7 +11,7 @@ export function ImprintView() {
   const content = getImprintContent(language);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 py-8 px-4">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       {!legal.isConfigured && content.configWarning && (
         <div className="flex items-start gap-3 border border-amber-500/40 bg-amber-500/10 p-4 rounded text-sm text-amber-200">
           <Warning size={20} weight="fill" className="shrink-0" />

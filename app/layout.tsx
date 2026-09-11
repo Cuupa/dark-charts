@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { CSSProperties } from 'react';
+import { Exo_2, Orbitron } from 'next/font/google';
 import { Providers } from './providers';
 import { PublicEffects } from './_components/PublicEffects';
 import { ThemeLoader } from './_components/ThemeLoader';
@@ -7,6 +8,20 @@ import { NavHidingWrapper } from './_components/NavHidingWrapper';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
 import './globals.css';
+
+const exo2 = Exo_2({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400', '700'],
+  variable: '--font-exo2',
+  display: 'swap',
+});
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-orbitron',
+  display: 'swap',
+});
 
 const fontVariables: CSSProperties = {
   ['--font-sans' as string]:
@@ -24,12 +39,17 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   interactiveWidget: 'resizes-visual',
-  themeColor: '#101010',
+  themeColor: '#0d0d1a',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" style={fontVariables} suppressHydrationWarning>
+    <html
+      lang="de"
+      className={`${exo2.variable} ${orbitron.variable}`}
+      style={fontVariables}
+      suppressHydrationWarning
+    >
       <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
         <a
           href="#main-content"

@@ -35,7 +35,7 @@ export default async function ArtistPage({ params }: ArtistPageProps) {
   if (!artist) notFound();
 
   return (
-    <main id="main-content" className="mx-auto max-w-5xl space-y-8 px-4 py-8 md:px-8">
+    <div className="mx-auto max-w-5xl space-y-8">
       <header className="space-y-3">
         <p className="font-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
           {t('catalog.artist')}
@@ -78,6 +78,6 @@ export default async function ArtistPage({ params }: ArtistPageProps) {
           </ul>
         )}
       </section>
-    </main>
+    </div>
   );
 }

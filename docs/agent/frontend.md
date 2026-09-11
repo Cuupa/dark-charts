@@ -4,16 +4,20 @@ Stack: Next.js 16 App Router, React 19, Tailwind v4 (PostCSS), Framer Motion, Le
 
 ## CI colors (exact hex)
 
+Live darkTunes.com palette. Keep Dark Charts on the same CI.
+
 | Token | Hex | Use |
 |-------|-----|-----|
-| background | `oklch(0.02 0 0)` / `rgb(16,16,16)` | Page background |
-| foreground | `#ffffff` | Primary text |
-| card | `#292929` | Cards, modals, surfaces |
-| primary / accent | `#493687` | CTAs, active nav, focus, glow |
-| secondary | `#7e1e37` | Secondary actions, promo |
-| border | `#383838` | Borders, inputs |
+| background | `#0d0d1a` | Page background |
+| foreground | `#f3f0ff` | Primary text |
+| card / muted | `#1a1a2e` | Cards, modals, surfaces |
+| primary / accent / ring | `#6d28d9` | CTAs, active nav, focus, glow |
+| secondary | `#9333ea` | Secondary actions, promo |
+| border / input | `#2d2d4e` | Borders, inputs |
 
-Defined in `app/globals.css` `:root`. `tailwind.config.js` is IDE-only for token names; runtime tokens live in CSS.
+Defined in `app/globals.css` `:root` and `src/config/defaultTheme.ts`. `tailwind.config.js` is IDE-only for token names; runtime tokens live in CSS. Admin → Colors can override; reset to defaults to restore this CI.
+
+Fonts: **Exo 2** (body) and **Orbitron** (headings / `.display-font`) via `next/font/google` in `app/layout.tsx`.
 
 ## Theme
 
@@ -48,14 +52,14 @@ Chart visuals use Recharts inside client leaves (`ChartShellClient`, `HomeCharts
 
 ## i18n / legal
 
-Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`. Club-announcer voice: short, imperative, no formulas on the public surface. Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
+Public UI copy lives in `src/i18n/messages.ts` (de default, en). `t(key, vars)` from `useLanguage()` (client) or `getTranslator()` (RSC). Language cookie `lang`. No hardcoded UI strings; no `isEn ? '…' : '…'`. Voice: warm, human, scene-authentic, easy to understand. Names: Fan charts, Club charts, Overall charts, Streaming. Explain how voting and ranking work in plain language — no quadratic/Sybil/formula jargon, no clipped club-announcer bark. Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*`.
 
 ## Class names & layout
 
 - Always `cn()` from `@/lib/utils` — never template-literal class merging.
 - Mobile-first; fluid widths; skeletons match loaded layout (zero CLS).
-- Public pages use the `app/(main)` layout group with `MainLayoutClient`; admin uses `AdminPageShell`.
+- Public pages use the `app/(main)` layout group with `MainLayoutClient`: one `#main-content`, `max-w-7xl px-4 py-8 md:px-8 pb-28`. Do not add a second `main` or extra page `px-4 py-8`. Admin uses `AdminPageShell`. Header/footer are hidden on `/admin` and `/login`.
 
 ## Visual effects
 
-`PublicEffects` / `NavHidingWrapper` on public routes can layer atmospheric effects. Keep them from harming readability; respect reduced motion.
+`PublicEffects` / `NavHidingWrapper` on public routes can layer a light grain/vignette. Do **not** enable CRT scanlines or chromatic hover on public chart rows. Keep effects from harming readability; respect reduced motion.

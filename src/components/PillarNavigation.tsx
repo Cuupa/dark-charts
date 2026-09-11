@@ -59,8 +59,8 @@ export function PillarNavigation({
   ];
 
   return (
-    <div className={cn("sticky top-16 z-40 w-full bg-card/50 border-y border-border backdrop-blur-md", className)}>
-      <div className="w-full px-4 md:px-8 py-4">
+    <div className={cn("w-full", className)}>
+      <div className="w-full px-4 md:px-8 py-2">
         <div className="mx-auto max-w-7xl">
           {isMobile ? (
             <div className="flex overflow-x-auto gap-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>

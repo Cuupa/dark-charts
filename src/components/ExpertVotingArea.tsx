@@ -139,10 +139,10 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
       <div className="flex flex-col gap-4">
         <div className="flex-1">
           <h1 className="display-font text-4xl uppercase tracking-wider text-foreground font-semibold mb-2">
-            Expert Voting
+            {t('voting.expertTitle')}
           </h1>
-          <p className="font-ui text-sm text-muted-foreground">
-            Wähle deine Top 10 Tracks aus. Platz 1 erhält 10 Punkte, Platz 10 erhält 1 Punkt.
+          <p className="font-ui text-sm md:text-base text-muted-foreground leading-relaxed max-w-2xl">
+            {t('voting.expertDescription')}
           </p>
         </div>
       </div>
@@ -150,7 +150,7 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* Left Column: Top 10 Slots */}
         <div className="space-y-4">
-          <h2 className="font-display text-xl uppercase tracking-wider">Top 10 Liste</h2>
+          <h2 className="font-display text-xl uppercase tracking-wider">{t('voting.expertList')}</h2>
           <Card className="bg-card border border-border p-4 space-y-2">
             {[...Array(10)].map((_, i) => {
               const track = selectedTracks[i];

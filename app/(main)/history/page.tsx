@@ -7,10 +7,8 @@ import { ChartArchiveView } from '@/components/ChartArchiveView';
 
 export default function HistoryPage() {
   return (
-    <main id="main-content" className="space-y-8">
-      <ErrorBoundary level="component">
-        <ChartArchiveView />
-      </ErrorBoundary>
-    </main>
+    <ErrorBoundary level="component">
+      <ChartArchiveView />
+    </ErrorBoundary>
   );
 }

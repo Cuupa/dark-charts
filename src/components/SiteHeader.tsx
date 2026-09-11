@@ -3,18 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  ChartLine,
-  Info,
-  Sliders,
-  ChartBar,
-  ClockCounterClockwise,
-  Translate,
-  Users,
-  List,
-  VinylRecord,
-  MagnifyingGlass,
-} from '@phosphor-icons/react';
+import { List } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -26,15 +15,6 @@ function isNavActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const NAV_ICONS = {
-  home: ChartLine,
-  search: MagnifyingGlass,
-  'custom-charts': Sliders,
-  voting: ChartBar,
-  history: ClockCounterClockwise,
-  about: Info,
-} as const;
-
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t, language, setLanguage } = useLanguage();
@@ -42,7 +22,6 @@ export function SiteHeader() {
 
   const navItems = NAV_ITEMS.map((item) => ({
     ...item,
-    icon: NAV_ICONS[item.view as keyof typeof NAV_ICONS] ?? ChartLine,
     label: t(item.labelKey),
   }));
 
@@ -50,8 +29,8 @@ export function SiteHeader() {
     cn(
       'text-sm font-medium tracking-wider uppercase transition-colors rounded-md px-3 py-2',
       active
-        ? 'bg-primary/10 text-primary'
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        ? 'text-primary'
+        : 'text-muted-foreground hover:text-foreground'
     );
 
   return (
@@ -60,23 +39,18 @@ export function SiteHeader() {
         <div className="flex h-16 items-center justify-between gap-4">
           <Link
             href={ROUTES.home}
-            className="flex items-center gap-3 shrink-0 focus-visible:ring-2 focus-visible:ring-ring outline-none group"
+            className="flex items-center shrink-0 focus-visible:ring-2 focus-visible:ring-ring outline-none"
             aria-label={t('a11y.home')}
           >
-            <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center text-primary-foreground transition-transform group-hover:scale-105">
-              <VinylRecord size={22} weight="fill" />
-            </div>
-            <span className="hidden sm:inline text-sm font-bold tracking-wide">Dark Charts</span>
+            <span className="display-font text-sm md:text-base text-foreground">Dark Charts</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1" aria-label={t('a11y.nav')}>
             {navItems.map((item) => {
-              const Icon = item.icon;
               const active = isNavActive(pathname, item.href);
               return (
                 <Button key={item.view} variant="ghost" asChild className={navLinkClass(active)}>
                   <Link href={item.href} aria-current={active ? 'page' : undefined}>
-                    <Icon size={16} weight={active ? 'fill' : 'regular'} className="mr-2" />
                     {item.label}
                   </Link>
                 </Button>
@@ -87,33 +61,23 @@ export function SiteHeader() {
               variant="ghost"
               size="sm"
               onClick={() => setLanguage(language === 'de' ? 'en' : 'de')}
-              className="ml-2 min-w-[44px] min-h-[44px] text-xs font-mono text-muted-foreground hover:text-foreground border border-border/40 hover:border-primary/40 px-2 py-1"
+              className="ml-2 min-w-[44px] min-h-[44px] text-xs font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground px-2 py-1"
               aria-label={t('a11y.switchLang')}
             >
               {language === 'de' ? 'EN' : 'DE'}
             </Button>
 
-            <Button variant="ghost" size="icon" asChild className="min-w-[44px] min-h-[44px]">
+            <Button variant="ghost" size="sm" asChild className={navLinkClass(isNavActive(pathname, ROUTES.profile))}>
               <Link
                 href={ROUTES.profile}
-                aria-label={t('a11y.profile')}
                 aria-current={isNavActive(pathname, ROUTES.profile) ? 'page' : undefined}
               >
-                <Users
-                  size={20}
-                  weight={isNavActive(pathname, ROUTES.profile) ? 'fill' : 'regular'}
-                />
+                {t('nav.profile')}
               </Link>
             </Button>
           </nav>
 
           <div className="flex items-center gap-2 lg:hidden">
-            <Button variant="ghost" size="icon" asChild className="min-w-[44px] min-h-[44px]">
-              <Link href={ROUTES.profile} aria-label={t('a11y.profile')}>
-                <Users size={20} />
-              </Link>
-            </Button>
-
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -129,13 +93,12 @@ export function SiteHeader() {
                 <SheetTitle className="sr-only">Navigation</SheetTitle>
                 <div className="flex h-full flex-col">
                   <div className="px-4 py-5 border-b border-border">
-                    <p className="text-sm font-bold tracking-wide">Dark Charts</p>
+                    <p className="display-font text-sm">Dark Charts</p>
                   </div>
 
                   <nav className="flex-1 overflow-y-auto py-3 px-2" aria-label="Mobile navigation">
                     <ul className="space-y-0.5">
                       {navItems.map((item) => {
-                        const Icon = item.icon;
                         const active = isNavActive(pathname, item.href);
                         return (
                           <li key={item.view}>
@@ -143,25 +106,38 @@ export function SiteHeader() {
                               href={item.href}
                               onClick={() => setMobileOpen(false)}
                               className={cn(
-                                'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+                                'flex items-center rounded-md px-3 py-2.5 text-sm font-medium tracking-wider uppercase transition-colors min-h-[44px]',
                                 active
                                   ? 'bg-primary/10 text-primary'
                                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                               )}
                               aria-current={active ? 'page' : undefined}
                             >
-                              <Icon size={18} weight={active ? 'fill' : 'regular'} />
                               {item.label}
                             </Link>
                           </li>
                         );
                       })}
+                      <li>
+                        <Link
+                          href={ROUTES.profile}
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            'flex items-center rounded-md px-3 py-2.5 text-sm font-medium tracking-wider uppercase transition-colors min-h-[44px]',
+                            isNavActive(pathname, ROUTES.profile)
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          )}
+                          aria-current={isNavActive(pathname, ROUTES.profile) ? 'page' : undefined}
+                        >
+                          {t('nav.profile')}
+                        </Link>
+                      </li>
                     </ul>
                   </nav>
 
                   <div className="border-t border-border px-4 py-4 space-y-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-                      <Translate size={16} />
+                    <div className="text-xs text-muted-foreground uppercase tracking-wider">
                       {t('profile.language')}
                     </div>
                     <div className="grid grid-cols-2 gap-2">

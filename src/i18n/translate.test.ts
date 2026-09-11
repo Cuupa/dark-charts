@@ -11,12 +11,12 @@ describe('interpolate', () => {
 
 describe('lookupMessage', () => {
   const catalog = {
-    de: { 'nav.home': 'Listen', 'chart.weightsFormula': '{fan}% Szene' },
-    en: { 'nav.home': 'Lists', 'chart.weightsFormula': '{fan}% crowd' },
+    de: { 'nav.home': 'Charts', 'chart.weightsFormula': '{fan}% Fan' },
+    en: { 'nav.home': 'Charts', 'chart.weightsFormula': '{fan}% Fan' },
   };
 
   it('uses the active language', () => {
-    expect(lookupMessage(catalog, 'de', 'nav.home')).toBe('Listen');
+    expect(lookupMessage(catalog, 'de', 'nav.home')).toBe('Charts');
   });
 
   it('falls back to de then the key', () => {

@@ -21,17 +21,7 @@ export function MusicPlayer({ currentTrack, onNext, onPrevious }: MusicPlayerPro
   }, []);
 
   if (!currentTrack) {
-    return (
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-        <div className="max-w-[1800px] mx-auto px-4 md:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <div className="data-font text-xs text-muted-foreground uppercase tracking-[0.2em]">
-              No track selected
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const handlePlayPause = () => {
