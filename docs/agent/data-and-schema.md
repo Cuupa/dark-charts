@@ -26,7 +26,7 @@ Pass `AppSupabaseClient` as the first argument. `.single()` returning `PGRST116`
 
 ## Chart data
 
-`chart_entries` (aggregated) serve public chart reads via `src/lib/api/charts.ts`. Voting/bulk writes go through `src/lib/api/fan-vote.ts` and `src/lib/api/votes.ts`. Fan/expert ballots are unique per `(voter, release, weekStart)`. Vote anomalies/conflicts in `src/lib/vote-anomaly.ts`, `src/lib/vote-conflicts.ts`. Eligible voting catalog: last 12 months (`src/lib/voting-eligibility.ts`). Credit reset: `src/lib/api/fan-credits.ts`. Account purge: `src/lib/api/account-purge.ts` (self-serve delete + 24-month inactivity cron). Weekly fan badges: `src/lib/badges/weekly-fan-badges.ts`.
+`chart_entries` (aggregated) serve public chart reads via `src/lib/api/charts.ts`. Voting/bulk writes go through `src/lib/api/fan-vote.ts` and `src/lib/api/votes.ts`. Fan/expert ballots are unique per `(voter, release, weekStart)`. Vote anomalies/conflicts in `src/lib/vote-anomaly.ts`, `src/lib/vote-conflicts.ts`. Eligible voting catalog: last 12 months (`src/lib/voting-eligibility.ts`). Credit reset: `src/lib/api/fan-credits.ts`. Account purge: `src/lib/api/account-purge.ts` (self-serve delete + 24-month inactivity cron). Weekly fan badges: `src/lib/badges/weekly-fan-badges.ts`. Airplay tracker: `tracked_playlists` / `radio_stations` / `airplay_events` / `airplay_snapshots`; rollup in `src/lib/airplay/`. Combined ranking never reads airplay.
 
 ## Public catalog
 

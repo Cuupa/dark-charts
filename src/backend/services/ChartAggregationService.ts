@@ -11,14 +11,16 @@ import { buildGenreChartInserts } from '@/lib/genre-aggregation';
 import { detectVoteAnomalies, persistVoteAnomalies } from '@/lib/vote-anomaly';
 import { blendStreamingPopularity, fetchYoutubePopularity } from '@/lib/youtube-metrics';
 import { getSystemSettings } from '@/lib/api/systemSettings';
+import { calculateAirplayScore } from '@/lib/airplay/airplayScore';
 import { getPreviousWeekStart, getIsoWeekYear } from '@/lib/week';
 
-type ChartTypeKey = 'fan' | 'expert' | 'streaming' | 'combined';
+type ChartTypeKey = 'fan' | 'expert' | 'streaming' | 'combined' | 'airplay';
 
 interface ReleaseMetrics {
   fanScore: number;
   expertScore: number;
   streamingScore: number;
+  airplayScore: number;
 }
 
 interface ChartEntryInsert {
@@ -198,7 +200,7 @@ export class ChartAggregationService {
     const ensureMetrics = (releaseId: string): ReleaseMetrics => {
       const current = releaseMetrics.get(releaseId);
       if (current) return current;
-      const fresh = { fanScore: 0, expertScore: 0, streamingScore: 0 };
+      const fresh = { fanScore: 0, expertScore: 0, streamingScore: 0, airplayScore: 0 };
       releaseMetrics.set(releaseId, fresh);
       return fresh;
     };
@@ -294,6 +296,42 @@ export class ChartAggregationService {
       metrics.streamingScore = Math.max(metrics.streamingScore, score);
     }
 
+    const { data: airplaySnapshots } = await supabase
+      .from('airplay_snapshots')
+      .select('*')
+      .eq('weekStart', weekStartIso);
+
+    if ((airplaySnapshots ?? []).length > 0) {
+      const { data: prevAirplaySnapshots } = await supabase
+        .from('airplay_snapshots')
+        .select('*')
+        .eq('weekStart', lastWeekStartIso);
+
+      const prevAirplayByRelease = new Map(
+        (prevAirplaySnapshots ?? []).map((s) => [s.releaseId, s])
+      );
+
+      const airplayReleaseIds = [
+        ...new Set((airplaySnapshots ?? []).map((s) => s.releaseId)),
+      ];
+      const { data: visibleAirplayReleases } = await supabase
+        .from('releases')
+        .select('id')
+        .eq('isVisible', true)
+        .in('id', airplayReleaseIds);
+      const visibleAirplayReleaseIds = new Set(
+        (visibleAirplayReleases ?? []).map((r) => r.id)
+      );
+
+      for (const snapshot of airplaySnapshots ?? []) {
+        if (!visibleAirplayReleaseIds.has(snapshot.releaseId)) continue;
+        const prev = prevAirplayByRelease.get(snapshot.releaseId) ?? null;
+        const score = calculateAirplayScore(snapshot, prev);
+        const metrics = ensureMetrics(snapshot.releaseId);
+        metrics.airplayScore = Math.max(metrics.airplayScore, score);
+      }
+    }
+
     const allReleaseIds = Array.from(releaseMetrics.keys());
     if (allReleaseIds.length === 0) {
       await resetFanCredits(supabase, settings.voiceCreditsBudget);
@@ -325,7 +363,7 @@ export class ChartAggregationService {
       return { releaseId, ...m, weightedScore, communityPower };
     });
 
-    const chartTypes: ChartTypeKey[] = ['fan', 'expert', 'combined', 'streaming'];
+    const chartTypes: ChartTypeKey[] = ['fan', 'expert', 'combined', 'streaming', 'airplay'];
     const lastWeekPlacements = new Map<ChartTypeKey, Map<string, number>>();
 
     for (const chartType of chartTypes) {
@@ -351,7 +389,10 @@ export class ChartAggregationService {
       scoreFn: (item: (typeof combinedScores)[0]) => number
     ) => {
       const sorted = [...combinedScores]
-        .filter((item) => chartType !== 'streaming' || scoreFn(item) > 0)
+        .filter(
+          (item) =>
+            (chartType !== 'streaming' && chartType !== 'airplay') || scoreFn(item) > 0
+        )
         .sort((a, b) => scoreFn(b) - scoreFn(a));
       const placements = lastWeekPlacements.get(chartType) ?? new Map<string, number>();
 
@@ -382,6 +423,7 @@ export class ChartAggregationService {
     buildEntries('expert', (i) => i.expertScore);
     buildEntries('combined', (i) => i.weightedScore);
     buildEntries('streaming', (i) => i.streamingScore);
+    buildEntries('airplay', (i) => i.airplayScore);
 
     const { data: releaseGenreRows } = await supabase
       .from('releases')

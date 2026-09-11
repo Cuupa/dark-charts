@@ -4,6 +4,7 @@
 - [ ] Public routes load: `/`, `/charts/[pillar]`, `/charts/archive`, `/history`, `/genre/[main]`, `/custom-charts`, `/methodology`, `/spotlight`, `/about`, `/imprint`, `/privacy`, `/terms`, `/search`, `/artist/[id]`, `/release/[id]`
 - [ ] Chart pillars render correct data for a seeded week (Fan / Club / Combined); empty weeks show empty, not demo tracks
 - [ ] `/charts/streaming` shows snapshot-based popularity or empty — never iTunes/mock stand-ins; overall stays fan+club only
+- [ ] Airplay snapshots never change Combined / Fan / Club placements; `/api/charts?type=airplay` is empty until events exist
 - [ ] Genre pages: main genre lists subgenres; subgenre page filters correctly (niche windows applied)
 - [ ] Methodology page explains the weighted merge and pillar isolation
 - [ ] Voting: verified voter can cast votes; cost rises quadratically; receipt + confirmation render

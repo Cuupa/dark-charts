@@ -569,6 +569,170 @@ export type Database = {
           createdAt?: string
         }
       }
+      tracked_playlists: {
+        Row: {
+          id: string
+          platform: string
+          externalId: string
+          name: string
+          curatorName: string | null
+          followerCount: number
+          url: string | null
+          isActive: boolean
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: string
+          platform: string
+          externalId: string
+          name: string
+          curatorName?: string | null
+          followerCount?: number
+          url?: string | null
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          platform?: string
+          externalId?: string
+          name?: string
+          curatorName?: string | null
+          followerCount?: number
+          url?: string | null
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+      }
+      radio_stations: {
+        Row: {
+          id: string
+          name: string
+          streamUrl: string | null
+          nowPlayingUrl: string | null
+          nowPlayingFormat: string | null
+          country: string | null
+          isActive: boolean
+          createdAt: string
+          updatedAt: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          streamUrl?: string | null
+          nowPlayingUrl?: string | null
+          nowPlayingFormat?: string | null
+          country?: string | null
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          streamUrl?: string | null
+          nowPlayingUrl?: string | null
+          nowPlayingFormat?: string | null
+          country?: string | null
+          isActive?: boolean
+          createdAt?: string
+          updatedAt?: string
+        }
+      }
+      airplay_events: {
+        Row: {
+          id: string
+          releaseId: string | null
+          artistId: string | null
+          source: string
+          sourcePlaylistId: string | null
+          sourceStationId: string | null
+          sourceLabel: string | null
+          position: number | null
+          reach: number
+          weight: number
+          idempotencyKey: string | null
+          observedAt: string
+          weekStart: string
+          createdAt: string
+        }
+        Insert: {
+          id?: string
+          releaseId?: string | null
+          artistId?: string | null
+          source: string
+          sourcePlaylistId?: string | null
+          sourceStationId?: string | null
+          sourceLabel?: string | null
+          position?: number | null
+          reach?: number
+          weight?: number
+          idempotencyKey?: string | null
+          observedAt?: string
+          weekStart: string
+          createdAt?: string
+        }
+        Update: {
+          id?: string
+          releaseId?: string | null
+          artistId?: string | null
+          source?: string
+          sourcePlaylistId?: string | null
+          sourceStationId?: string | null
+          sourceLabel?: string | null
+          position?: number | null
+          reach?: number
+          weight?: number
+          idempotencyKey?: string | null
+          observedAt?: string
+          weekStart?: string
+          createdAt?: string
+        }
+      }
+      airplay_snapshots: {
+        Row: {
+          id: string
+          releaseId: string
+          weekStart: string
+          playlistAddCount: number
+          playlistReach: number
+          radioSpinCount: number
+          radioStationCount: number
+          djSpinCount: number
+          totalReach: number
+          score: number
+          createdAt: string
+        }
+        Insert: {
+          id?: string
+          releaseId: string
+          weekStart: string
+          playlistAddCount?: number
+          playlistReach?: number
+          radioSpinCount?: number
+          radioStationCount?: number
+          djSpinCount?: number
+          totalReach?: number
+          score?: number
+          createdAt?: string
+        }
+        Update: {
+          id?: string
+          releaseId?: string
+          weekStart?: string
+          playlistAddCount?: number
+          playlistReach?: number
+          radioSpinCount?: number
+          radioStationCount?: number
+          djSpinCount?: number
+          totalReach?: number
+          score?: number
+          createdAt?: string
+        }
+      }
       audit_logs: {
         Row: {
           id: string
