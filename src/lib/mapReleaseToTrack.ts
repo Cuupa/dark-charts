@@ -24,7 +24,7 @@ export function mapReleaseToTrack(release: ReleaseWithArtist): Track {
   return {
     id: release.id,
     rank: 0,
-    artist: release.artist?.name ?? 'Unknown Artist',
+    artist: release.artist?.name ?? '',
     title: release.title,
     genres,
     movement: 0,

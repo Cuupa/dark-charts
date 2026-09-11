@@ -7,6 +7,7 @@ import { ThemeLoader } from './_components/ThemeLoader';
 import { NavHidingWrapper } from './_components/NavHidingWrapper';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
+import { getLanguage, getTranslator } from '@/i18n/server';
 import './globals.css';
 
 const exo2 = Exo_2({
@@ -30,10 +31,13 @@ const fontVariables: CSSProperties = {
     'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
 };
 
-export const metadata: Metadata = {
-  title: 'Dark Charts',
-  description: 'Independent music charts for the dark scene',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslator();
+  return {
+    title: 'Dark Charts',
+    description: t('meta.description'),
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -42,10 +46,12 @@ export const viewport: Viewport = {
   themeColor: '#0d0d1a',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const language = await getLanguage();
+  const t = await getTranslator();
   return (
     <html
-      lang="de"
+      lang={language}
       className={`${exo2.variable} ${orbitron.variable}`}
       style={fontVariables}
       suppressHydrationWarning
@@ -55,9 +61,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:rounded-md focus:border focus:border-accent focus:outline-none"
         >
-          Skip to main content
+          {t('a11y.skip')}
         </a>
-        <Providers>
+        <Providers initialLanguage={language}>
           <ThemeLoader />
           <PublicEffects />
           <NavHidingWrapper>

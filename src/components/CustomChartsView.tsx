@@ -161,8 +161,8 @@ export function CustomChartsView() {
           if (data.success && data.entries) {
             const mappedTracks: Track[] = data.entries.map((entry: any) => ({
               id: entry.release?.id || entry.id,
-              title: entry.release?.title || 'Unknown Title',
-              artist: entry.release?.artist?.name || 'Unknown Artist',
+              title: entry.release?.title || '',
+              artist: entry.release?.artist?.name || '',
               albumArt: entry.release?.itunesArtworkUrl || entry.release?.artist?.imageUrl || '',
               spotifyUri: entry.release?.spotifyId ? `spotify:track:${entry.release.spotifyId}` : '',
               genres: entry.release?.artist?.genres || [],

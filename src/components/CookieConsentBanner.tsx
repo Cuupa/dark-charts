@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useKV } from '@/hooks/useKV';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function CookieConsentBanner() {
+  const { t } = useLanguage();
   const [consentGiven, setConsentGiven] = useKV<'unset' | 'acceptedAll' | 'essentialOnly'>('cookie-consent', 'unset');
   const [showBanner, setShowBanner] = useState(false);
 
@@ -37,17 +39,15 @@ export function CookieConsentBanner() {
         <div className="p-6 space-y-4">
           <div className="space-y-3">
             <h3 className="font-display text-lg uppercase text-foreground">
-              Cookie-Hinweis / Cookie Notice
+              {t('ui.cookiesTitle')}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Wir verwenden technisch notwendige Speicher (Login-Session, Spracheinstellung, Cookie-Einwilligung).
-              Optionale Drittanbieter-Cookies werden erst nach Ihrer Einwilligung geladen, sobald entsprechende
-              Dienste aktiviert werden.
+              {t('ui.cookiesBody')}
             </p>
             <p className="text-xs text-muted-foreground">
-              Weitere Informationen in unserer{' '}
+              {t('ui.cookiesMore')}{' '}
               <Link href="/privacy" className="text-accent hover:text-primary transition-colors underline">
-                Datenschutzerklärung
+                {t('footer.privacy')}
               </Link>
               .
             </p>
@@ -58,14 +58,14 @@ export function CookieConsentBanner() {
               onClick={handleAccept}
               className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 sm:flex-none"
             >
-              Alle akzeptieren / Accept All
+              {t('ui.accept')}
             </Button>
             <Button
               onClick={handleReject}
               variant="outline"
               className="border-border text-foreground hover:bg-secondary flex-1 sm:flex-none"
             >
-              Nur notwendige / Essential Only
+              {t('ui.essential')}
             </Button>
           </div>
         </div>

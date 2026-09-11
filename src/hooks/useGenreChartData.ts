@@ -28,8 +28,8 @@ function mapEntryToTrack(
   return {
     id: entry.release?.id || entry.id,
     rank: entry.placement,
-    artist: entry.release?.artist?.name || 'Unknown Artist',
-    title: entry.release?.title || 'Unknown Title',
+    artist: entry.release?.artist?.name || '',
+    title: entry.release?.title || '',
     genres: (entry.release?.artist?.genres || []) as Genre[],
     movement,
     chartType,

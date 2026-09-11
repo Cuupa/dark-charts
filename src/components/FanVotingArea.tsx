@@ -385,7 +385,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                                   }));
                                 } else {
                                   // Brutalismus visual feedback could go here via a toast or wiggle animation state
-                                  toast.error("Nicht genug Credits für diese Stimme");
+                                  toast.error(t('voting.creditsShort'));
                                 }
                               }}
                             >
@@ -396,7 +396,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
                           <div className="h-4">
                             {currentVotes > 0 && (
                               <span className="font-ui text-[10px] text-muted-foreground uppercase tracking-widest">
-                                Kostet <span className="text-accent font-bold data-font">{calculateQuadraticCost(currentVotes)}</span> Credits
+                                {t('voting.creditsCost', { count: calculateQuadraticCost(currentVotes) })}
                               </span>
                             )}
                           </div>
@@ -447,7 +447,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
               onClick={() => setAllocatedVotes({})}
               disabled={totalCost === 0}
             >
-              Alle verwerfen
+              {t('voting.clearAll')}
             </Button>
             <Button
               variant="default"
@@ -458,7 +458,7 @@ export function FanVotingArea({ allTracks, onTrackClick, onVoteComplete }: Votin
 
                 try {
                   if (!user) {
-                    toast.error("Please login to submit votes");
+                    toast.error(t('voting.loginRequired'));
                     return;
                   }
 

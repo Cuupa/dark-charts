@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { getLegalConfig } from '@/lib/legal-config';
 import { getImprintContent } from '@/lib/legal-content';
 export function ImprintView() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const legal = getLegalConfig();
   const content = getImprintContent(language);
 
@@ -32,10 +32,10 @@ export function ImprintView() {
             </h2>
             <div className="space-y-2">
               <p className="font-data text-foreground">
-                <strong>{language === 'en' ? 'Operator:' : 'Betreiber:'}</strong> {legal.name}
+                <strong>{t('legal.operator')}</strong> {legal.name}
               </p>
               <p className="font-data">
-                <strong>{language === 'en' ? 'Legal form:' : 'Rechtsform:'}</strong> {legal.legalForm}
+                <strong>{t('legal.legalForm')}</strong> {legal.legalForm}
               </p>
               <p className="font-data flex items-start gap-2">
                 <MapPin size={16} className="text-accent mt-0.5 shrink-0" />

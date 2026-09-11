@@ -20,8 +20,8 @@ export function ChartEntry({ track, onClick }: ChartEntryProps) {
     </div>
     <Link href={`/release/${encodeURIComponent(track.id)}`} className="chart-artwork-link" tabIndex={-1} aria-hidden="true"><AlbumArtwork src={track.albumArt} alt="" artist={track.artist} title={track.title} size="small" /></Link>
     <div className="chart-track">
-      <Link className="chart-title" href={`/release/${encodeURIComponent(track.id)}`}>{track.title}</Link>
-      {track.artistId ? <Link className="chart-artist" href={`/artist/${encodeURIComponent(track.artistId)}`}>{track.artist}</Link> : <span className="chart-artist">{track.artist}</span>}
+      <Link className="chart-title" href={`/release/${encodeURIComponent(track.id)}`}>{track.title || t('chart.unknownTitle')}</Link>
+      {track.artistId ? <Link className="chart-artist" href={`/artist/${encodeURIComponent(track.artistId)}`}>{track.artist || t('chart.unknownArtist')}</Link> : <span className="chart-artist">{track.artist || t('chart.unknownArtist')}</span>}
       <span className="chart-genre">{track.genres[0]}</span>
     </div>
     <div className="chart-weeks"><span>{t('chart.weeks')}</span><strong>{track.weeksInChart ?? '-'}</strong></div>

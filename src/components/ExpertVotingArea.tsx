@@ -48,11 +48,11 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
       return;
     }
     if (selectedTracks.length >= 10) {
-      toast.error('Top 10 is already full');
+      toast.error(t('voting.top10Full'));
       return;
     }
     if (selectedTracks.find(t => t.id === track.id)) {
-      toast.error('Track is already in Top 10');
+      toast.error(t('voting.alreadyInTop10'));
       return;
     }
     setSelectedTracks(prev => [...prev, track]);
@@ -85,7 +85,7 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
 
     try {
       if (!user) {
-        toast.error("Please login to submit votes");
+        toast.error(t('voting.loginRequired'));
         return;
       }
 
@@ -106,15 +106,15 @@ export function ExpertVotingArea({ allTracks, onTrackClick, onVoteComplete }: Ex
           toast.error(t('voting.integrityReview'));
           return;
         }
-        throw new Error(errorData.error || 'Failed to submit votes');
+        throw new Error(errorData.error || t('voting.submitFailed'));
       }
 
-      toast.success(t('voting.submitSuccess') || 'Vote submitted');
+      toast.success(t('voting.submitSuccess'));
       if (onVoteComplete) {
         onVoteComplete();
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to submit votes';
+      const message = error instanceof Error ? error.message : t('voting.submitFailed');
       logger.error('Error submitting expert votes', { error });
       toast.error(message);
     }

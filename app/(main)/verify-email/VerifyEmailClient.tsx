@@ -5,8 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function VerifyEmailClient() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -15,7 +17,7 @@ export function VerifyEmailClient() {
   useEffect(() => {
     if (!token) {
       setStatus('error');
-      setMessage('Kein Verifizierungstoken in der URL.');
+      setMessage(t('verify.missingToken'));
       return;
     }
 
@@ -24,27 +26,27 @@ export function VerifyEmailClient() {
         const res = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`);
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error || 'Verifizierung fehlgeschlagen');
+          throw new Error(data.error || t('verify.failed'));
         }
         setStatus('success');
-        setMessage('E-Mail erfolgreich bestätigt. Du kannst jetzt abstimmen.');
+        setMessage(t('verify.success'));
       } catch (error) {
         setStatus('error');
-        setMessage(error instanceof Error ? error.message : 'Verifizierung fehlgeschlagen');
+        setMessage(error instanceof Error ? error.message : t('verify.failed'));
       }
     };
 
-    verify();
-  }, [token]);
+    void verify();
+  }, [token, t]);
 
   return (
     <div className="max-w-lg mx-auto">
       <Card className="p-8 text-center space-y-4 border border-border bg-card">
         <h1 className="display-font text-2xl uppercase text-foreground font-semibold">
-          E-Mail-Verifizierung
+          {t('verify.title')}
         </h1>
         {status === 'loading' && (
-          <p className="font-ui text-sm text-muted-foreground">Verifiziere deine E-Mail…</p>
+          <p className="font-ui text-sm text-muted-foreground">{t('verify.loading')}</p>
         )}
         {status !== 'loading' && (
           <p className={`font-ui text-sm ${status === 'success' ? 'text-primary' : 'text-destructive'}`}>
@@ -52,7 +54,7 @@ export function VerifyEmailClient() {
           </p>
         )}
         <Button asChild variant="outline" size="sm">
-          <Link href="/profile">Zum Profil</Link>
+          <Link href="/profile">{t('verify.toProfile')}</Link>
         </Button>
       </Card>
     </div>

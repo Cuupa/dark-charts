@@ -32,6 +32,20 @@ describe('public chart copy', () => {
     expect(messages.de['methodology.clubDetail'].length).toBeGreaterThan(80);
   });
 
+  it('keeps the same keys in de and en', () => {
+    expect(Object.keys(messages.de).sort()).toEqual(Object.keys(messages.en).sort());
+  });
+
+  it('does not mix German and English in one string', () => {
+    const bilingual = /\/\s*(accept all|essential only|cookie notice|loading)/i;
+    for (const lang of ['de', 'en'] as const) {
+      for (const [key, value] of Object.entries(messages[lang])) {
+        expect(value, `${lang} ${key}`).not.toMatch(bilingual);
+        expect(value, `${lang} ${key}`).not.toMatch(/\bCookie-Hinweis \/ Cookie Notice\b/);
+      }
+    }
+  });
+
   it('does not leak spec or privacy constraints into public copy', () => {
     const skip = /^(admin|oauth|profile|error|catalog)\./;
     const leak = /keine e-?mails?|never e-?mails?|no e-?mails?|anzeigenamen|display names, never|sybil|quadratic|steht offen da|kippt die woche/i;
