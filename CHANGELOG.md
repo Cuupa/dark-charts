@@ -17,7 +17,7 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Voting pool filter: visible releases from the last 12 months (`eligible=1` on `/api/releases`).
 
 ### Changed
-- Public UI is one language at a time. Cookie `lang` is the only store; header has an explicit DE | EN switch; cookie banner, skip link, login, voting toasts, and imprint labels go through `messages.ts` instead of bilingual or hardcoded copy.
+- Public UI is one language at a time. Cookie `lang` is the only store; header has an explicit DE | EN switch; cookie banner, skip link, login, voting toasts, imprint labels, custom charts (`/custom-charts`), legal page links, expert voting, and the vote receipt go through `messages.ts` instead of bilingual or hardcoded copy.
 - Redesigned the public chart surface around the darkTunes CI: editorial chart header, isolated pillar tabs, compact responsive ranking rows, semantic release/artist links, honest score and movement states, and reduced visual effects.
 - Added a deterministic, clearly labelled demo catalog for disconnected environments. Demo release and artist routes now resolve consistently, while live mode surfaces API errors instead of silently inventing rankings.
 - Preview playback is opt-in and uses only a real `previewUrl`; no simulated duration, progress, or automatic third-party embeds are shown.

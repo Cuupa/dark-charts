@@ -1,4 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+'use client';
+
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +10,9 @@ import { Plus, FloppyDisk, Trash, Eye, EyeSlash, X, Funnel } from '@phosphor-ico
 import { useKV } from '@/hooks/useKV';
 import { ChartEntry } from '@/components/ChartEntry';
 import { WeightingPanel } from '@/components/WeightingPanel';
-import { useDataService } from '@/contexts/DataContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
 
 interface CustomChart {
   id: string;
@@ -59,8 +61,33 @@ const genreGroups: GenreGroup[] = [
   }
 ];
 
+type OfficialChartEntry = {
+  id?: string;
+  placement?: number;
+  movement?: number;
+  communityPower?: number;
+  release?: {
+    id?: string;
+    title?: string;
+    itunesArtworkUrl?: string | null;
+    spotifyId?: string | null;
+    artist?: {
+      name?: string;
+      imageUrl?: string | null;
+      genres?: string[];
+    };
+  };
+};
+
+function officialEntriesFrom(data: unknown): OfficialChartEntry[] {
+  if (!data || typeof data !== 'object') return [];
+  const rec = data as Record<string, unknown>;
+  if (rec.success !== true || !Array.isArray(rec.entries)) return [];
+  return rec.entries.filter((entry): entry is OfficialChartEntry => typeof entry === 'object' && entry !== null);
+}
+
 export function CustomChartsView() {
-  const dataService = useDataService();
+  const { t } = useLanguage();
   const [savedCharts, setSavedCharts] = useKV<CustomChart[]>('custom-charts', []);
   const [isCreating, setIsCreating] = useState(false);
   const [editingChart, setEditingChart] = useState<CustomChart | null>(null);
@@ -157,26 +184,25 @@ export function CustomChartsView() {
       setIsLoadingTracks(true);
       fetch('/api/charts/current')
         .then(res => res.json())
-        .then(data => {
-          if (data.success && data.entries) {
-            const mappedTracks: Track[] = data.entries.map((entry: any) => ({
-              id: entry.release?.id || entry.id,
-              title: entry.release?.title || '',
-              artist: entry.release?.artist?.name || '',
-              albumArt: entry.release?.itunesArtworkUrl || entry.release?.artist?.imageUrl || '',
-              spotifyUri: entry.release?.spotifyId ? `spotify:track:${entry.release.spotifyId}` : '',
-              genres: entry.release?.artist?.genres || [],
-              rank: entry.placement,
-              movement: entry.movement,
-              trend_direction: entry.movement > 0 ? 'up' : entry.movement < 0 ? 'down' : 'stable',
-              community_power: entry.communityPower,
-              weeksInChart: 1, // Optional: might need to be computed or passed
-              votes: 0 // Fan scores are abstracted
-            }));
-            setOfficialTracks(mappedTracks);
-          }
+        .then((data: unknown) => {
+          const mappedTracks: Track[] = officialEntriesFrom(data).map((entry) => ({
+            id: entry.release?.id || entry.id || '',
+            title: entry.release?.title || '',
+            artist: entry.release?.artist?.name || '',
+            albumArt: entry.release?.itunesArtworkUrl || entry.release?.artist?.imageUrl || '',
+            spotifyUri: entry.release?.spotifyId ? `spotify:track:${entry.release.spotifyId}` : '',
+            genres: (entry.release?.artist?.genres ?? []) as Genre[],
+            rank: entry.placement ?? 0,
+            chartType: 'overall',
+            movement: entry.movement,
+            trend_direction: (entry.movement ?? 0) > 0 ? 'up' : (entry.movement ?? 0) < 0 ? 'down' : 'stable',
+            community_power: entry.communityPower,
+            weeksInChart: 1,
+            votes: 0
+          }));
+          setOfficialTracks(mappedTracks);
         })
-        .catch(err => console.error('Error fetching official charts:', err))
+        .catch(err => logger.error('Error fetching official charts', { error: err }))
         .finally(() => setIsLoadingTracks(false));
     } else {
       setOfficialTracks([]);
@@ -195,7 +221,7 @@ export function CustomChartsView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="display-font text-4xl uppercase tracking-wider text-foreground font-semibold">
-          Custom Charts
+          {t('custom.title')}
         </h1>
         {!isCreating && !viewingChart && (
           <Button
@@ -203,7 +229,7 @@ export function CustomChartsView() {
             className="flex items-center gap-2 bg-accent hover:bg-accent/80 text-accent-foreground snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold"
           >
             <Plus weight="bold" className="w-4 h-4" />
-            Create Chart
+            {t('custom.createChart')}
           </Button>
         )}
       </div>
@@ -226,12 +252,12 @@ export function CustomChartsView() {
                   {viewingChart.isPublic ? (
                     <Badge className="bg-primary text-primary-foreground font-ui text-[10px] uppercase">
                       <Eye weight="bold" className="w-3 h-3 mr-1" />
-                      Public
+                      {t('custom.public')}
                     </Badge>
                   ) : (
                     <Badge className="bg-secondary text-secondary-foreground font-ui text-[10px] uppercase">
                       <EyeSlash weight="bold" className="w-3 h-3 mr-1" />
-                      Private
+                      {t('custom.private')}
                     </Badge>
                   )}
                 </div>
@@ -247,6 +273,7 @@ export function CustomChartsView() {
                 onClick={() => setViewingChart(null)}
                 variant="ghost"
                 className="snap-transition"
+                aria-label={t('ui.close')}
               >
                 <X weight="bold" className="w-5 h-5" />
               </Button>
@@ -255,7 +282,7 @@ export function CustomChartsView() {
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
                 <p className="font-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                  Fan Weight
+                  {t('custom.fanWeightLabel')}
                 </p>
                 <p className="data-font text-2xl text-primary font-bold">
                   {viewingChart.weights.fan}%
@@ -263,7 +290,7 @@ export function CustomChartsView() {
               </div>
               <div>
                 <p className="font-ui text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                  Club Weight
+                  {t('custom.clubWeightLabel')}
                 </p>
                 <p className="data-font text-2xl text-accent font-bold">
                   {viewingChart.weights.expert}%
@@ -276,7 +303,7 @@ export function CustomChartsView() {
             <Card className="bg-card border border-border">
               <div className="p-4 border-b border-border">
                 <h3 className="display-font text-xl uppercase text-foreground tracking-tight font-semibold">
-                  Chart Results ({isLoadingTracks ? '...' : filteredChart.length} tracks)
+                  {t('custom.chartResults', { count: isLoadingTracks ? '…' : filteredChart.length })}
                 </h3>
               </div>
               <motion.div layout>
@@ -304,10 +331,10 @@ export function CustomChartsView() {
             <Card className="bg-card border border-border p-12 text-center">
               <Funnel weight="duotone" className="w-20 h-20 mx-auto text-muted-foreground mb-4 opacity-40" />
               <h3 className="display-font text-3xl uppercase text-muted-foreground mb-3 tracking-tight font-semibold">
-                No Matching Tracks
+                {t('custom.noMatchingTracks')}
               </h3>
               <p className="font-ui text-muted-foreground uppercase tracking-[0.2em] text-xs">
-                Try adjusting your genre filters
+                {t('custom.adjustFilters')}
               </p>
             </Card>
           )}
@@ -322,25 +349,25 @@ export function CustomChartsView() {
         >
           <Card className="bg-card border border-accent p-6">
             <h2 className="display-font text-2xl uppercase tracking-tight text-foreground font-semibold mb-6">
-              {editingChart ? 'Edit Chart' : 'Create New Chart'}
+              {editingChart ? t('custom.editChart') : t('custom.createNewChart')}
             </h2>
 
             <div className="space-y-6">
               <div>
                 <label className="font-ui text-xs uppercase tracking-[0.15em] text-foreground font-semibold mb-2 block">
-                  Chart Name
+                  {t('custom.chartName')}
                 </label>
                 <Input
                   value={chartName}
                   onChange={(e) => setChartName(e.target.value)}
-                  placeholder="My Custom Chart"
+                  placeholder={t('custom.namePlaceholder')}
                   className="bg-background border-border font-ui"
                 />
               </div>
 
               <div>
                 <label className="font-ui text-xs uppercase tracking-[0.15em] text-foreground font-semibold mb-3 block">
-                  Visibility
+                  {t('custom.visibility')}
                 </label>
                 <div className="flex gap-3">
                   <Button
@@ -350,7 +377,7 @@ export function CustomChartsView() {
                     className="flex items-center gap-2 snap-transition font-ui text-xs uppercase"
                   >
                     <EyeSlash weight="bold" className="w-4 h-4" />
-                    Private
+                    {t('custom.private')}
                   </Button>
                   <Button
                     type="button"
@@ -359,14 +386,14 @@ export function CustomChartsView() {
                     className="flex items-center gap-2 snap-transition font-ui text-xs uppercase"
                   >
                     <Eye weight="bold" className="w-4 h-4" />
-                    Public
+                    {t('custom.public')}
                   </Button>
                 </div>
               </div>
 
               <div>
                 <label className="font-ui text-xs uppercase tracking-[0.15em] text-foreground font-semibold mb-3 block">
-                  Select Genres ({selectedGenres.length} selected)
+                  {t('custom.selectGenresLabel', { count: selectedGenres.length })}
                 </label>
                 <div className="space-y-3">
                   {genreGroups.map(group => (
@@ -415,14 +442,14 @@ export function CustomChartsView() {
                   className="flex items-center gap-2 bg-primary hover:bg-primary/80 text-primary-foreground snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold"
                 >
                   <FloppyDisk weight="bold" className="w-4 h-4" />
-                  {editingChart ? 'Save Changes' : 'Save Chart'}
+                  {editingChart ? t('custom.saveChanges') : t('custom.saveChart')}
                 </Button>
                 <Button
                   onClick={cancelEdit}
                   variant="outline"
                   className="font-ui text-xs uppercase tracking-[0.15em] font-semibold snap-transition"
                 >
-                  Cancel
+                  {t('custom.cancel')}
                 </Button>
               </div>
             </div>
@@ -455,7 +482,7 @@ export function CustomChartsView() {
                   </div>
 
                   <p className="font-ui text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                    {chart.genres.length} {chart.genres.length === 1 ? 'Genre' : 'Genres'}
+                    {t(chart.genres.length === 1 ? 'custom.genre' : 'custom.genres', { count: chart.genres.length })}
                   </p>
 
                   <div className="flex gap-2 pt-3 border-t border-border">
@@ -464,7 +491,7 @@ export function CustomChartsView() {
                       size="sm"
                       className="flex-1 bg-accent hover:bg-accent/80 text-accent-foreground snap-transition font-ui text-[10px] uppercase"
                     >
-                      View
+                      {t('custom.view')}
                     </Button>
                     <Button
                       onClick={() => startEdit(chart)}
@@ -472,13 +499,14 @@ export function CustomChartsView() {
                       variant="outline"
                       className="snap-transition font-ui text-[10px] uppercase"
                     >
-                      Edit
+                      {t('custom.edit')}
                     </Button>
                     <Button
                       onClick={() => deleteChart(chart.id)}
                       size="sm"
                       variant="outline"
                       className="hover:bg-destructive hover:text-destructive-foreground hover:border-destructive snap-transition"
+                      aria-label={t('custom.delete')}
                     >
                       <Trash weight="bold" className="w-4 h-4" />
                     </Button>
@@ -500,17 +528,17 @@ export function CustomChartsView() {
           <div className="relative">
             <Funnel weight="duotone" className="w-20 h-20 mx-auto text-muted-foreground mb-4 opacity-40" />
             <h3 className="display-font text-3xl md:text-4xl uppercase text-muted-foreground mb-3 tracking-tight font-semibold">
-              No Custom Charts Yet
+              {t('custom.noCharts')}
             </h3>
             <p className="font-ui text-muted-foreground uppercase tracking-[0.2em] text-xs mb-6">
-              Create your first custom chart by selecting genres and weights
+              {t('custom.createFirst')}
             </p>
             <Button
               onClick={() => setIsCreating(true)}
               className="bg-accent hover:bg-accent/80 text-accent-foreground snap-transition font-ui text-xs uppercase tracking-[0.15em] font-semibold"
             >
               <Plus weight="bold" className="w-4 h-4 mr-2" />
-              Create Your First Chart
+              {t('custom.createFirstCta')}
             </Button>
           </div>
         </Card>

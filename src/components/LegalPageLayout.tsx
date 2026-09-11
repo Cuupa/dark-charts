@@ -13,6 +13,7 @@ interface LegalPageLayoutProps {
 }
 
 export function LegalPageLayout({ content, showOperatorAddress = false }: LegalPageLayoutProps) {
+  const { t } = useLanguage();
   const legal = getLegalConfig();
 
   return (
@@ -68,11 +69,11 @@ export function LegalPageLayout({ content, showOperatorAddress = false }: LegalP
           ))}
 
           <p className="text-xs">
-            <Link href="/imprint" className="text-accent underline">Imprint</Link>
+            <Link href="/imprint" className="text-accent underline">{t('footer.imprint')}</Link>
             {' · '}
-            <Link href="/privacy" className="text-accent underline">Privacy</Link>
+            <Link href="/privacy" className="text-accent underline">{t('footer.privacy')}</Link>
             {' · '}
-            <Link href="/terms" className="text-accent underline">Terms</Link>
+            <Link href="/terms" className="text-accent underline">{t('footer.terms')}</Link>
           </p>
         </div>
       </Card>

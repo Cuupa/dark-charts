@@ -42,6 +42,12 @@ Distilled anti-patterns from project history. **Append session findings before o
 
 ## Session additions
 
+### 2026-09-11 — Catalog keys without t() still leak English
+
+**Symptom:** `/custom-charts` on DE still showed “CUSTOM CHARTS / CREATE CHART / NO CUSTOM CHARTS YET” while the nav was German.
+**Cause:** `custom.*` strings existed in `messages.ts` but `CustomChartsView` never called `t()`; copy was hardcoded English.
+**Rule / Fix:** Adding keys is not i18n. Wire every live visitor string through `t()`. Cover with a DE vs EN render test.
+
 ### 2026-09-11 — Unified patches fail after later main merges
 
 **Symptom:** `dark-charts-professional-ui.patch` did not apply on `upstream/main` after #56 (genre filter / podium / copy).
