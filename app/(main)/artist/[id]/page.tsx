@@ -2,15 +2,22 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { tryCreateServiceRoleSupabaseClient } from '@/lib/supabase/server';
-import { getPublicArtist } from '@/lib/api/public-catalog';
+import { getPublicArtist, type PublicArtist } from '@/lib/api/public-catalog';
 import { artistPath, releasePath } from '@/lib/routes';
 import { getTranslator } from '@/i18n/server';
+import { getDemoArtist } from '@/lib/demo/catalog';
+import { isDemoMode } from '@/lib/demo/mode';
 
 interface ArtistPageProps {
   params: Promise<{ id: string }>;
 }
 
 async function loadArtist(id: string) {
+  if (isDemoMode()) {
+    const artist = getDemoArtist(id);
+    if (!artist) return null;
+    return { id: artist.id, name: artist.name, bio: null, genres: artist.genres, imageUrl: null, country: null, foundedYear: null, verified: false, profileLink: null, releases: artist.releases.map(release => ({ id: release.id, title: release.title, releaseDate: release.releaseDate ?? '', releaseType: release.releaseType ?? 'single', artworkUrl: release.albumArt ?? null })) } satisfies PublicArtist;
+  }
   const supabase = tryCreateServiceRoleSupabaseClient();
   if (!supabase) return null;
   return getPublicArtist(supabase, id);

@@ -42,6 +42,12 @@ Distilled anti-patterns from project history. **Append session findings before o
 
 ## Session additions
 
+### 2026-09-11 — Unified patches fail after later main merges
+
+**Symptom:** `dark-charts-professional-ui.patch` did not apply on `upstream/main` after #56 (genre filter / podium / copy).
+**Cause:** The patch was generated against an older tree; 3-way apply had no original blobs.
+**Rule / Fix:** Reconstruct post-images from the unified diff, then re-apply leftover product files the patch did not touch (here: restore `/genre/[main]` to `GenrePageClient` instead of the #56 redirect). Keep `eslint.config.mjs` ignores global.
+
 ### 2026-09-11 — Spec language leaked onto the public DJ page
 
 **Symptom:** `/djs` explained “we only show public names, never emails.” Nobody asked.

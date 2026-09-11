@@ -1,37 +1,15 @@
 import { logger } from "@/lib/logger";
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Track, Genre } from '@/types';
+import { Track, Genre, ChartEdition } from '@/types';
 import { useDataService } from '@/contexts/DataContext';
-import { trackEnrichmentService } from '@/services/trackEnrichmentService';
-import { nightlySyncService } from '@/services/nightlySyncService';
 import { safeFilter, safeSlice } from '@/lib/safe-utils';
-
-let nightlySyncInitialized = false;
-
-async function enrichTracksInBackground(
-  fan: Track[],
-  expert: Track[],
-  allTracks: Track[],
-  onUpdate: (fan: Track[], expert: Track[]) => void
-) {
-  if (!trackEnrichmentService || allTracks.length === 0) return;
-
-  try {
-    trackEnrichmentService.startBackgroundSync(allTracks);
-    const enrichedTracks = await trackEnrichmentService.enrichTracks(allTracks);
-    const enrichedMap = new Map(enrichedTracks.map((t) => [t.id, t]));
-
-    onUpdate(
-      fan.map((t) => enrichedMap.get(t.id) || t),
-      expert.map((t) => enrichedMap.get(t.id) || t)
-    );
-  } catch (enrichmentError) {
-    logger.error('Failed to enrich tracks in background:', enrichmentError);
-  }
-}
 
 export function useChartData() {
   const dataService = useDataService();
+  const [error, setError] = useState<string | null>(null);
+  const [edition, setEdition] = useState<ChartEdition | undefined>();
+  const [attempt, setAttempt] = useState(0);
+  const reload = useCallback(() => setAttempt(a => a + 1), []);
   const [fanCharts, setFanCharts] = useState<Track[]>([]);
   const [expertCharts, setExpertCharts] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +21,7 @@ export function useChartData() {
 
     const loadCharts = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         if (!dataService) {
           throw new Error('DataService not available');
@@ -62,29 +41,11 @@ export function useChartData() {
         setFanCharts(fan);
         setExpertCharts(expert);
 
-        if (fan.length > 0) {
-          setCurrentTrack(fan[0]);
-        }
-
-        const allTracks = [...fan, ...expert];
-        void enrichTracksInBackground(fan, expert, allTracks, (ef, ee) => {
-          if (!cancelled) {
-            setFanCharts(ef);
-            setExpertCharts(ee);
-          }
-        });
-
-        if (nightlySyncService && !nightlySyncInitialized) {
-          nightlySyncInitialized = true;
-          try {
-            nightlySyncService.initialize();
-          } catch (syncError) {
-            logger.error('Failed to initialize nightly sync:', syncError);
-          }
-        }
+        setEdition(data.edition);
       } catch (error) {
         logger.error('Failed to load charts:', error);
         if (!cancelled) {
+          setError('chart.loadError');
           setFanCharts([]);
           setExpertCharts([]);
         }
@@ -99,7 +60,7 @@ export function useChartData() {
     return () => {
       cancelled = true;
     };
-  }, [dataService]);
+  }, [dataService, attempt]);
 
   const allGenres: Genre[] = useMemo(() => {
     try {
@@ -185,6 +146,7 @@ export function useChartData() {
     fanCharts,
     expertCharts,
     isLoading,
+    error, reload, edition,
     currentTrack,
     setCurrentTrack,
     selectedGenres,

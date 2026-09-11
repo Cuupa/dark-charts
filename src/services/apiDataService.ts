@@ -1,14 +1,16 @@
 import { ChartData, Genre, IDataService, Track } from '@/types';
-import { ComprehensiveDataService } from './comprehensiveDataService';
+import { getDemoCharts } from '@/lib/demo/catalog';
+import { isDemoMode } from '@/lib/demo/mode';
+import { z } from 'zod';
 import { logger } from '@/lib/logger';
-import { isSupabaseEnvConfigured } from '@/lib/supabase/isConfigured';
-import { calculateOverallChart } from '@/lib/math/normalization';
 
 type ChartApiEntry = {
   id: string;
   placement: number;
   movement: number | null;
   communityPower: number | null;
+  score?: number | null;
+  weekStart?: string;
   release?: {
     id: string;
     title: string;
@@ -16,6 +18,7 @@ type ChartApiEntry = {
     itunesArtworkUrl: string | null;
     vercelBlobUrl: string | null;
     artist?: {
+      id?: string;
       name: string;
       genres: string[] | null;
       imageUrl: string | null;
@@ -30,6 +33,9 @@ function mapEntryToTrack(
   const movement = entry.movement ?? 0;
   return {
     id: entry.release?.id || entry.id,
+    chartEntryId: entry.id,
+    artistId: entry.release?.artist?.id,
+    score: entry.score ?? undefined,
     rank: entry.placement,
     artist: entry.release?.artist?.name || 'Unknown Artist',
     title: entry.release?.title || 'Unknown Title',
@@ -42,25 +48,34 @@ function mapEntryToTrack(
       entry.release?.artist?.imageUrl ||
       undefined,
     spotifyUri: entry.release?.spotifyId ? `spotify:track:${entry.release.spotifyId}` : undefined,
-    community_power: entry.communityPower ?? undefined,
+
     trend_direction: movement > 0 ? 'up' : movement < 0 ? 'down' : 'stable',
-    weeksInChart: 1,
-    votes: 0,
+
   };
 }
 
-type ChartApiResponse = {
-  success: boolean;
-  entries: ChartApiEntry[];
-  source?: 'database' | 'itunes';
-};
+const chartResponseSchema = z.object({
+  success: z.boolean(),
+  source: z.enum(['database', 'itunes']).optional(),
+  entries: z.array(z.object({
+    id: z.string(), placement: z.number(), movement: z.number().nullable().optional().default(null),
+    score: z.number().nullable().optional(), weekStart: z.string().optional(),
+    communityPower: z.number().nullable().optional().default(null),
+    release: z.object({
+      id: z.string(), title: z.string(), spotifyId: z.string().nullable().optional().default(null),
+      itunesArtworkUrl: z.string().nullable().optional().default(null),
+      vercelBlobUrl: z.string().nullable().optional().default(null),
+      artist: z.object({ id: z.string().optional(), name: z.string(), genres: z.array(z.string()).nullable().optional().default(null), imageUrl: z.string().nullable().optional().default(null) }).nullable().optional(),
+    }).nullable().optional(),
+  })),
+});
 
 async function fetchChartType(
   type: 'fan' | 'expert' | 'streaming' | 'combined'
-): Promise<{ tracks: Track[]; source?: 'database' | 'itunes' }> {
+): Promise<{ tracks: Track[]; source?: 'database' | 'itunes'; weekStart?: string }> {
   const res = await fetch(`/api/charts?type=${type}&completed=true&limit=50`);
-  if (!res.ok) return { tracks: [] };
-  const data = (await res.json()) as ChartApiResponse;
+  if (!res.ok) throw new Error('Charts unavailable');
+  const data = chartResponseSchema.parse(await res.json());
   if (!data.success || !Array.isArray(data.entries) || data.entries.length === 0) {
     return { tracks: [], source: data.source };
   }
@@ -68,11 +83,12 @@ async function fetchChartType(
   return {
     tracks: data.entries.map((entry: ChartApiEntry) => mapEntryToTrack(entry, chartType)),
     source: data.source,
+    weekStart: data.entries[0]?.weekStart,
   };
 }
 
 export class ApiDataService implements IDataService {
-  private fallback = new ComprehensiveDataService();
+
   private fanCharts: Track[] = [];
   private expertCharts: Track[] = [];
   private combinedCharts: Track[] = [];
@@ -88,11 +104,11 @@ export class ApiDataService implements IDataService {
   }
 
   async getAllCharts(): Promise<ChartData> {
-    if (!isSupabaseEnvConfigured()) {
+    if (isDemoMode()) {
       logger.info('Supabase not configured — using demo chart data');
       this.isUsingMockData = true;
       this.isUsingItunesData = false;
-      const data = await this.fallback.getAllCharts();
+      const data = getDemoCharts();
       this.cacheCharts(data);
       return data;
     }
@@ -110,7 +126,8 @@ export class ApiDataService implements IDataService {
         expertResult.source === 'itunes' ||
         combinedResult.source === 'itunes';
 
-      const data = {
+      const data: ChartData = {
+        edition: combinedResult.weekStart ? { weekStart: combinedResult.weekStart, status: "published", source: combinedResult.source ?? "database" } : undefined,
         fanCharts: fanResult.tracks,
         expertCharts: expertResult.tracks,
         streamingCharts: [] as Track[],
@@ -122,22 +139,17 @@ export class ApiDataService implements IDataService {
       logger.error('Failed to fetch charts from API', { error });
       this.isUsingMockData = false;
       this.isUsingItunesData = false;
-      const data = {
-        fanCharts: [] as Track[],
-        expertCharts: [] as Track[],
-        streamingCharts: [] as Track[],
-        combinedCharts: [] as Track[],
-      };
-      this.cacheCharts(data);
-      return data;
+      throw error;
+
     }
   }
 
   async getChartByType(type: 'fan' | 'expert' | 'streaming'): Promise<Track[]> {
-    if (!isSupabaseEnvConfigured()) {
+    if (isDemoMode()) {
       this.isUsingMockData = true;
       this.isUsingItunesData = false;
-      return this.fallback.getChartByType(type);
+      const data = getDemoCharts();
+      return type === 'fan' ? data.fanCharts : type === 'expert' ? data.expertCharts : [];
     }
 
     const { tracks } = await fetchChartType(type);
@@ -153,11 +165,7 @@ export class ApiDataService implements IDataService {
       return [];
     }
 
-    return calculateOverallChart(this.fanCharts, this.expertCharts, {
-      fan: 0.55,
-      expert: 0.45,
-      streaming: 0,
-    });
+    return [];
   }
 
   async vote(_trackId: string, _direction: 'up' | 'down'): Promise<void> {
@@ -173,6 +181,9 @@ export class ApiDataService implements IDataService {
   }
 
   getNextChartPublicationDate(): Date {
-    return this.fallback.getNextChartPublicationDate();
+    const next = new Date();
+    next.setUTCDate(next.getUTCDate() + (8 - (next.getUTCDay() || 7)));
+    next.setUTCHours(0, 0, 0, 0);
+    return next;
   }
 }

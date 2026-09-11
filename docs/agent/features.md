@@ -35,7 +35,7 @@ Public route `/charts/streaming`. Weekly snapshots (`streaming_snapshots`) from 
 
 ## Genre taxonomy
 
-SSOT `src/lib/config/genres.ts` — `Gothic`, `Metal`, `Dark Electro`, `Crossover`, each with ordered subgenres. Subgenre charts may accumulate over longer windows and only activate past a voting threshold; subgenre votes roll up into the parent main genre (`src/lib/genre-aggregation.ts`, `genre-charts.ts`). Routes: `/genre/[main]` and `/genre/[main]/[sub]`.
+SSOT `src/lib/config/genres.ts` — `Gothic`, `Metal`, `Dark Electro`, `Crossover`, each with ordered subgenres. Subgenre charts may accumulate over longer windows and only activate past a voting threshold; subgenre votes roll up into the parent main genre (`src/lib/genre-aggregation.ts`, `genre-charts.ts`). Routes: `/genre/[main]` and `/genre/[main]/[sub]` (rendered by `GenrePageClient`; pillar via `?pillar=`). Chart tabs/filters are `ChartNavigation` on the chart surface, not a layout redirect to `?genre=`.
 
 ## Custom charts
 

@@ -64,7 +64,11 @@ Legal pages: `src/lib/legal-content.ts`; operator data from `NEXT_PUBLIC_LEGAL_*
 
 - Always `cn()` from `@/lib/utils` — never template-literal class merging.
 - Mobile-first; fluid widths; skeletons match loaded layout (zero CLS).
-- Public pages use the `app/(main)` layout group with `MainLayoutClient`: one `#main-content`, `max-w-7xl px-4 py-8 md:px-8 pb-28`. Do not add a second `main` or extra page `px-4 py-8`. Admin uses `AdminPageShell`. Header/footer are hidden on `/admin` and `/login`.
+- Public pages use the `app/(main)` layout group with `MainLayoutClient`: one `#main-content.public-content`, `max-w-7xl px-4 py-6 md:px-8 pb-32`. `DataSourceBanner` and Spotlight sit inside that main. Do not add a second `main` or extra page `px-4 py-8`. Admin uses `AdminPageShell`. Header/footer are hidden on `/admin` and `/login`.
+- Chart pillar/genre controls (`ChartNavigation`) render inside the chart views (`HomeChartsView`, `GenrePageClient`), not in the layout chrome. `useSearchParams` is wrapped in `Suspense` inside `ChartNavigation`.
+- Public chart chrome (header, tabs, ranking grid, player) uses classes in `app/globals.css` (`.chart-heading`, `.chart-row`, `.music-player`, …). Presentation helpers live in `src/lib/charts/presentation.ts`.
+- When Supabase is unconfigured (or `NEXT_PUBLIC_DATA_MODE=demo`), public catalog/chart routes use the labelled demo edition in `src/lib/demo/catalog.ts`. `NEXT_PUBLIC_DATA_MODE=live` forces the live API.
+- Lint entrypoint is flat `eslint.config.mjs` (ESLint 9 + `eslint-config-next/core-web-vitals`).
 
 ## Visual effects
 

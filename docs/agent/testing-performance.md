@@ -15,6 +15,10 @@ npm run test:watch  # (not wired; use --watch)
 
 Coverage baseline includes: `src/lib/math/*`, `src/lib/vote-conflicts.ts`, `src/lib/vote-anomaly.ts`, `src/lib/vote-anomaly-guard.ts`, `src/lib/trust-level.ts`, `src/lib/week.ts`, `src/lib/youtube-metrics.ts`, `src/lib/itunesApi.ts`, `src/lib/charts/itunesChartStore.ts`, `src/lib/sync/itunesSyncQueue.ts`, `src/lib/catalog/importDarktunes.ts`, `src/lib/catalog/seedConsolidatedArtists.ts`, `src/lib/artists/consolidatedArtists.ts`, `src/lib/genre-aggregation.ts`, `src/config/vercel.config.test.ts`, and admin views (`ArtistBlacklistView`, `ChartControlView`, `DashboardMetricsView`, `PromotionApprovalView`, `SystemSettingsView`, `UserManagementView`, `ChartArchiveView`).
 
+## Lint
+
+Flat ESLint 9 config is `eslint.config.mjs` (`eslint-config-next/core-web-vitals`). `npm run lint` is `eslint .`. Put global ignores in a top-level `{ ignores: [...] }` object — `ignores` next to `rules` only apply to that block.
+
 ## Full CI
 
 ```bash

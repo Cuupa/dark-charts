@@ -1,94 +1,27 @@
 'use client';
-
-import { useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ChartType, Genre, MainGenre } from '@/types';
-import { GenreCharts } from '@/components/GenreCharts';
-import { SubGenreNavigation } from '@/components/SubGenreNavigation';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { mainGenrePath } from '@/lib/routes';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import type { Genre, MainGenre } from '@/types';
+import { mainGenreMap } from '@/lib/config/genres';
+import { ChartHeader } from '@/components/charts/ChartHeader';
+import { HybridChartTable } from '@/components/HybridChartTable';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { ChartNavigation } from './ChartNavigation';
 import { useChartShell } from './ChartShellClient';
-import { useGenreChartData } from '@/hooks/useGenreChartData';
 
-interface GenrePageClientProps {
-  mainGenre: MainGenre;
-  subGenre?: Genre | null;
+export function GenrePageClient(props: { mainGenre: MainGenre; subGenre?: Genre | null }) {
+  return (
+    <Suspense fallback={null}>
+      <GenrePageInner {...props} />
+    </Suspense>
+  );
 }
 
-export function GenrePageClient({ mainGenre, subGenre = null }: GenrePageClientProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pillarParam = searchParams.get('pillar');
-  const activePillar: ChartType | 'overview' =
-    pillarParam === 'fan' || pillarParam === 'expert' || pillarParam === 'club'
-      ? pillarParam === 'club'
-        ? 'expert'
-        : pillarParam
-      : 'overview';
-
-  const {
-    fanCharts: shellFan,
-    expertCharts: shellExpert,
-    isLoading: shellLoading,
-    handleTrackClick,
-  } = useChartShell();
-
-  const {
-    fanCharts: genreFan,
-    expertCharts: genreExpert,
-    isLoading: genreLoading,
-    hasServerData,
-  } = useGenreChartData(mainGenre, subGenre);
-
-  const filteredCharts = useMemo(() => {
-    if (hasServerData) {
-      return {
-        fanCharts: genreFan,
-        expertCharts: genreExpert,
-      };
-    }
-
-    const filterBySub = (tracks: typeof shellFan) => {
-      if (!subGenre) return tracks;
-      return tracks.filter((t) => t.genres?.includes(subGenre));
-    };
-
-    return {
-      fanCharts: filterBySub(shellFan),
-      expertCharts: filterBySub(shellExpert),
-    };
-  }, [
-    hasServerData,
-    genreFan,
-    genreExpert,
-    subGenre,
-    shellFan,
-    shellExpert,
-  ]);
-
-  const isLoading = hasServerData ? genreLoading : shellLoading;
-
-  return (
-    <div className="space-y-6">
-      <ErrorBoundary level="component">
-        <SubGenreNavigation
-          mainGenre={mainGenre}
-          activeSubGenre={subGenre}
-          onSubGenreChange={(genre) => {
-            router.push(mainGenrePath(mainGenre, genre ?? undefined));
-          }}
-        />
-      </ErrorBoundary>
-      <ErrorBoundary level="component">
-        <GenreCharts
-          mainGenre={mainGenre}
-          activePillar={activePillar}
-          fanCharts={filteredCharts.fanCharts}
-          expertCharts={filteredCharts.expertCharts}
-          isLoading={isLoading}
-          onTrackClick={handleTrackClick}
-        />
-      </ErrorBoundary>
-    </div>
-  );
+function GenrePageInner({ mainGenre, subGenre = null }: { mainGenre: MainGenre; subGenre?: Genre | null }) {
+  const shell = useChartShell();
+  const mode = useSearchParams().get('pillar') ?? 'overall';
+  const { t } = useLanguage();
+  const base = mode === 'fan' ? shell.fanCharts : mode === 'club' || mode === 'expert' ? shell.expertCharts : mode === 'streaming' ? [] : shell.overallChart;
+  const tracks = base.filter(track => track.genres.some(g => subGenre ? g === subGenre : mainGenreMap[mainGenre].includes(g))).map((track, i) => ({ ...track, rank: i + 1 }));
+  return <><ChartHeader title={subGenre ?? mainGenre} lead={t(`pillar.${mode === 'expert' ? 'club' : mode}`)} edition={shell.edition} /><ChartNavigation /><HybridChartTable tracks={tracks} isLoading={shell.isLoading} error={!!shell.error} onRetry={shell.reload} onTrackClick={track => shell.playTrack(track, tracks)} /></>;
 }

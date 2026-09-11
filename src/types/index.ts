@@ -17,6 +17,11 @@ export type ChartType = 'fan' | 'expert' | 'streaming' | 'overall';
 export type ViewType = 'home' | 'main-genre' | 'sub-genre' | 'profile' | 'custom-charts' | 'about' | 'voting' | 'voting-confirmation' | 'history' | 'admin' | 'admin-metrics' | 'admin-analytics' | 'admin-users' | 'admin-artists' | 'admin-charts' | 'admin-promotions' | 'admin-spotlight' | 'admin-anomalies' | 'admin-settings' | 'oauth-callback' | 'profiles-demo' | 'privacy' | 'terms' | 'imprint' | 'archive' | 'search';
 
 export interface Track {
+  artistId?: string;
+  chartEntryId?: string;
+  score?: number;
+  source?: "demo" | "database" | "itunes";
+  releaseType?: string;
   id: string;
   rank: number;
   artist: string;
@@ -104,7 +109,17 @@ export interface ChartWeights {
   streaming: number;
 }
 
+export interface ChartEdition {
+  weekStart: string;
+  publishedAt?: string;
+  status: "demo" | "published" | "unavailable";
+  source: "demo" | "database" | "itunes";
+  rulesVersion?: string;
+  weights?: ChartWeights;
+}
+
 export interface ChartData {
+  edition?: ChartEdition;
   fanCharts: Track[];
   expertCharts: Track[];
   streamingCharts: Track[];

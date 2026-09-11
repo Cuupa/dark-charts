@@ -17,9 +17,13 @@ All notable changes to this project are documented here. Format follows [Keep a 
 - Voting pool filter: visible releases from the last 12 months (`eligible=1` on `/api/releases`).
 
 ### Changed
-- Genre tabs filter the open chart (`/charts/club?genre=metal`). Alle clears the filter. `/genre/[main]` redirects there.
-- Demo warning sits above the sticky chart nav so the title is not covered.
-- Chart lists lead with a top-3 podium (large artwork, glow on #1), then the rest of the ranking.
+- Redesigned the public chart surface around the darkTunes CI: editorial chart header, isolated pillar tabs, compact responsive ranking rows, semantic release/artist links, honest score and movement states, and reduced visual effects.
+- Added a deterministic, clearly labelled demo catalog for disconnected environments. Demo release and artist routes now resolve consistently, while live mode surfaces API errors instead of silently inventing rankings.
+- Preview playback is opt-in and uses only a real `previewUrl`; no simulated duration, progress, or automatic third-party embeds are shown.
+- Added the missing flat ESLint entrypoint so the repository CI command is executable on ESLint 9.
+- Genre and subgenre filters live on the chart surface (`/genre/[main]`, optional `?pillar=`). Alle clears the filter.
+- Demo warning sits in `#main-content` above the editorial chart header.
+- Public ranking rows are compact (rank, movement, artwork, title/artist, weeks, score, play); #1 is highlighted instead of a separate podium block.
 - Public copy must not leak spec/privacy constraints (denylist test). DJ ranking blurb no longer mentions emails.
 - `/charts/streaming` is a real pillar again (the old redirect to `/` is gone). iTunes demo data no longer fills streaming with Fan entries.
 - Public ranking copy is spoken German/English; the methodology page has the full voting rules (points cost, Club top 10, trust, why streaming stays separate).
