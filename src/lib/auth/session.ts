@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { authService } from '@/backend/services/AuthService';
+import { DEMO_AUTH_COOKIE, resolveDemoToken } from '@/lib/auth/demoAccounts';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
 import {
   createReadOnlyRouteSupabaseClient,
@@ -18,26 +19,40 @@ async function loadUserRole(userId: string): Promise<{
   role: string;
   isSuspended: boolean;
 } | null> {
-  const supabase = createServiceRoleSupabaseClient();
-  const { data, error } = await supabase
-    .from('users')
-    .select('role, isSuspended')
-    .eq('id', userId)
-    .maybeSingle();
+  try {
+    const supabase = createServiceRoleSupabaseClient();
+    const { data, error } = await supabase
+      .from('users')
+      .select('role, isSuspended')
+      .eq('id', userId)
+      .maybeSingle();
 
-  if (error || !data) return null;
-  return { role: data.role, isSuspended: data.isSuspended };
+    if (error || !data) return null;
+    return { role: data.role, isSuspended: data.isSuspended };
+  } catch {
+    return null;
+  }
+}
+
+function bearerFromRequest(req: NextRequest): string | null {
+  const authHeader = req.headers.get('authorization');
+  return authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
 }
 
 export async function resolveAuthFromRequest(
   req: NextRequest
 ): Promise<ResolvedAuth | null> {
-  const authHeader = req.headers.get('authorization');
-  const bearerToken = authHeader?.startsWith('Bearer ')
-    ? authHeader.slice(7).trim()
-    : null;
+  const bearerToken = bearerFromRequest(req);
+  const demoToken = bearerToken ?? req.cookies.get(DEMO_AUTH_COOKIE)?.value;
+  const demoAuth = await resolveDemoToken(demoToken, process.env);
+  if (demoAuth) return demoAuth;
 
-  const supabase = createReadOnlyRouteSupabaseClient(req);
+  let supabase;
+  try {
+    supabase = createReadOnlyRouteSupabaseClient(req);
+  } catch {
+    return null;
+  }
   const {
     data: { user },
     error,
@@ -87,17 +102,25 @@ export async function resolveAuthFromRequest(
   }
 
   if (bearerToken) {
-    const decoded = await authService.verifyToken(bearerToken);
-    if (decoded) {
-      const profile = await loadUserRole(decoded.userId);
-      if (!profile || profile.isSuspended) return null;
-      return {
-        userId: decoded.userId,
-        email: decoded.email,
-        role: profile.role,
-        isDemo: decoded.isDemo,
-        source: 'jwt',
-      };
+    try {
+      const decoded = await authService.verifyToken(bearerToken);
+      if (decoded?.isDemo) {
+        const demoAuth = await resolveDemoToken(bearerToken, process.env);
+        if (demoAuth) return demoAuth;
+      }
+      if (decoded) {
+        const profile = await loadUserRole(decoded.userId);
+        if (!profile || profile.isSuspended) return null;
+        return {
+          userId: decoded.userId,
+          email: decoded.email,
+          role: profile.role,
+          isDemo: decoded.isDemo,
+          source: 'jwt',
+        };
+      }
+    } catch {
+      return null;
     }
   }
 

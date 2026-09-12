@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler, ApiError } from '@/lib/errors';
 import { applyCorsToResponse, handleCors } from '@/lib/api-middleware';
 import { requireAuth } from '@/lib/api-auth';
+import { buildDemoAuthUser, isDemoRole } from '@/lib/auth/demoAccounts';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
@@ -9,6 +10,14 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   if (cors) return cors;
 
   const decoded = await requireAuth(req);
+  if (decoded.isDemo && isDemoRole(decoded.role)) {
+    const response = NextResponse.json({
+      success: true,
+      user: buildDemoAuthUser(decoded.role),
+    });
+    return applyCorsToResponse(response, 'GET,OPTIONS');
+  }
+
   const supabase = createServiceRoleSupabaseClient();
 
   const { data: user, error } = await supabase

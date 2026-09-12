@@ -19,10 +19,7 @@ function redirectToLogin(request: NextRequest): NextResponse {
 
 async function hasDemoAdminAccess(request: NextRequest): Promise<boolean> {
   if (!isDemoLoginAllowed(process.env)) return false;
-  return demoCookieGrantsAdmin(
-    request.cookies.get(DEMO_AUTH_COOKIE)?.value,
-    process.env.JWT_SECRET
-  );
+  return demoCookieGrantsAdmin(request.cookies.get(DEMO_AUTH_COOKIE)?.value, process.env);
 }
 
 function redirectToLoginUnauthorized(request: NextRequest): NextResponse {

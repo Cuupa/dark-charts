@@ -11,7 +11,7 @@
 
 Roles: `FAN`, `DJ`, `BAND`, `LABEL`, `ADMIN` (`users.role`). Enforcement at three layers: Edge `proxy.ts`, API route guards, and RLS.
 
-Helper (`src/lib/auth/session.ts` → `resolveAuthFromRequest`) resolves session / JWT / demo. Types: `session` | `jwt` | `api_key`. Demo roles: FAN, DJ, BAND, LABEL, **ADMIN** (`demo-admin@darkcharts.demo`). `/login` exposes Preview admin area. `proxy.ts` accepts `dc-demo-token` for `/admin` when demo login is allowed. Production still requires `ALLOW_DEMO_LOGIN=1`.
+Helper (`src/lib/auth/session.ts` → `resolveAuthFromRequest`) resolves session / JWT / demo. Types: `session` | `jwt` | `api_key`. Demo roles: FAN, DJ, BAND, LABEL, **ADMIN** — signed JWT only, no `users` insert. `/login` exposes Preview admin area. `proxy.ts` accepts `dc-demo-token` for `/admin` when demo login is allowed. Production still requires `ALLOW_DEMO_LOGIN=1`.
 
 ## Data API `/api/v1/*`
 
