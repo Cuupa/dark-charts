@@ -61,7 +61,7 @@ UPDATE public.users SET role = 'ADMIN' WHERE email = 'you@example.com';
 
 Navigate to `/admin`. If not authenticated you will be redirected to `/login?returnTo=/admin`; after login you are routed by role (`resolveRedirectPath`).
 
-Local preview: `/login` → **Preview admin area** / **Admin-Bereich ansehen**. That creates `demo-admin@darkcharts.demo` (role `ADMIN`) and a short-lived demo cookie. Production stays off unless `ALLOW_DEMO_LOGIN=1`.
+Local preview: `/login` → **Preview admin area** / **Admin-Bereich ansehen**. In-memory demo session only (no `users` row, works with no Supabase). Production stays off unless `ALLOW_DEMO_LOGIN=1`.
 
 ## Chart ops (operator-facing)
 

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { withErrorHandler, ApiError } from '@/lib/errors';
 import {
@@ -8,22 +7,14 @@ import {
   handleCors,
   setRateLimitHeaders,
 } from '@/lib/api-middleware';
-import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 import {
-  DEMO_ACCOUNTS,
   DEMO_AUTH_COOKIE,
+  buildDemoAuthUser,
+  getDemoSigningSecret,
   isDemoLoginAllowed,
   isDemoRole,
 } from '@/lib/auth/demoAccounts';
-
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET environment variable must be set');
-  }
-  return secret;
-}
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
   const cors = handleCors(req, 'POST,OPTIONS');
@@ -41,96 +32,20 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   if (!isDemoRole(role)) {
     throw new ApiError(400, 'Invalid role. Must be one of: FAN, DJ, BAND, LABEL, ADMIN');
   }
-  const demoConfig = DEMO_ACCOUNTS.find((a) => a.role === role);
 
-  if (!demoConfig) {
-    throw new ApiError(400, 'Invalid role. Must be one of: FAN, DJ, BAND, LABEL, ADMIN');
-  }
-
-  const supabase = createServiceRoleSupabaseClient();
-
-  let { data: user } = await supabase
-    .from('users')
-    .select('*, fanProfile:fan_profiles(*), djProfile:dj_profiles(*), bandProfile:band_profiles(*), labelProfile:label_profiles(*)')
-    .eq('email', demoConfig.email)
-    .maybeSingle();
-
-  if (!user) {
-    const randomPassword = `${crypto.randomUUID()}-${crypto.randomUUID()}`;
-    const passwordHash = await bcrypt.hash(randomPassword, 10);
-
-    const { data: createdUser, error: createError } = await supabase
-      .from('users')
-      .insert({
-        email: demoConfig.email,
-        passwordHash,
-        role: demoConfig.role,
-        emailVerified: true,
-        trustLevel: 2,
-        authProvider: 'demo',
-      })
-      .select()
-      .single();
-
-    if (createError || !createdUser) {
-      throw new ApiError(500, 'Failed to create demo account');
-    }
-
-    if (demoConfig.role === 'FAN') {
-      await supabase.from('fan_profiles').insert({
-        userId: createdUser.id,
-        nickname: demoConfig.profileData.nickname ?? 'Demo Fan',
-        credits: 150,
-        remainingCredits: 150,
-      });
-    } else if (demoConfig.role === 'DJ') {
-      await supabase.from('dj_profiles').insert({
-        userId: createdUser.id,
-        bio: demoConfig.profileData.bio ?? 'Demo DJ',
-        expertStatus: false,
-        reputationScore: 0,
-      });
-    } else if (demoConfig.role === 'LABEL') {
-      await supabase.from('label_profiles').insert({
-        userId: createdUser.id,
-        companyName: demoConfig.profileData.companyName ?? 'Demo Label',
-      });
-    }
-
-    const refetch = await supabase
-      .from('users')
-      .select('*, fanProfile:fan_profiles(*), djProfile:dj_profiles(*), bandProfile:band_profiles(*), labelProfile:label_profiles(*)')
-      .eq('email', demoConfig.email)
-      .maybeSingle();
-
-    user = refetch.data ?? undefined;
-  }
-
-  if (!user) {
-    throw new ApiError(500, 'Failed to create demo account');
-  }
-
+  const user = buildDemoAuthUser(role);
   const token = jwt.sign(
     { userId: user.id, email: user.email, role: user.role, isDemo: true },
-    getJwtSecret(),
+    getDemoSigningSecret(process.env),
     { expiresIn: '2h' }
   );
 
-  logger.info('Demo login', { role: demoConfig.role });
+  logger.info('Demo login', { role: user.role, inMemory: true });
 
   const response = NextResponse.json({
     success: true,
     token,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      isDemo: true,
-      fanProfile: user.fanProfile ?? null,
-      djProfile: user.djProfile ?? null,
-      bandProfile: user.bandProfile ?? null,
-      labelProfile: user.labelProfile ?? null,
-    },
+    user,
   });
   response.cookies.set(DEMO_AUTH_COOKIE, token, {
     httpOnly: true,

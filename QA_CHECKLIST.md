@@ -91,4 +91,4 @@
 - [ ] `/imprint`, `/privacy`, `/terms` render operator data from `NEXT_PUBLIC_LEGAL_*`
 - [ ] Email verification works (Resend or Supabase built-in)
 - [ ] Demo login disabled in production unless `ALLOW_DEMO_LOGIN=1`
-- [ ] `/login` offers Preview admin area; in development it lands on `/admin` and shows Radio Monitor in the sidebar; a FAN demo cookie cannot open `/admin`
+- [ ] `/login` offers Preview admin area without a database; in development it lands on `/admin`; a FAN demo cookie cannot open `/admin`

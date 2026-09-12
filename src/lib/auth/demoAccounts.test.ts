@@ -4,9 +4,13 @@ import {
   DEMO_ACCOUNTS,
   DEMO_AUTH_COOKIE,
   DEMO_ROLES,
+  DEMO_USER_IDS,
+  buildDemoAuthUser,
+  getDemoSigningSecret,
   isDemoLoginAllowed,
   isDemoRole,
   payloadGrantsDemoAdmin,
+  resolveDemoAuthFromPayload,
   verifyHs256Jwt,
 } from './demoAccounts';
 
@@ -66,5 +70,38 @@ describe('demo admin cookie access', () => {
 
   it('uses a dedicated cookie name', () => {
     expect(DEMO_AUTH_COOKIE).toBe('dc-demo-token');
+  });
+});
+
+describe('in-memory demo user', () => {
+  it('uses stable ids and never needs a database row', () => {
+    const admin = buildDemoAuthUser('ADMIN');
+    expect(admin.id).toBe(DEMO_USER_IDS.ADMIN);
+    expect(admin.email).toBe('demo-admin@darkcharts.demo');
+    expect(admin.role).toBe('ADMIN');
+    expect(admin.isDemo).toBe(true);
+    expect(admin.fanProfile).toBeNull();
+  });
+
+  it('signs and resolves a demo session without looking up users', async () => {
+    const secret = getDemoSigningSecret({ NODE_ENV: 'development' });
+    const user = buildDemoAuthUser('ADMIN');
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role, isDemo: true },
+      secret,
+      { expiresIn: '2h' }
+    );
+    const payload = await verifyHs256Jwt(token, secret);
+    expect(resolveDemoAuthFromPayload(payload)).toEqual({
+      userId: user.id,
+      email: user.email,
+      role: 'ADMIN',
+      isDemo: true,
+      source: 'jwt',
+    });
+  });
+
+  it('falls back to a local signing secret when JWT_SECRET is missing', () => {
+    expect(getDemoSigningSecret({ NODE_ENV: 'test' }).length).toBeGreaterThan(8);
   });
 });
