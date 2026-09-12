@@ -38,7 +38,7 @@ Public chart data is served from aggregated `chart_entries`. Voting writes go th
 | Fan | `votes` + quadratic credits | Trust-weighted, weekly, `weekStart` on each ballot |
 | Expert (Club) | `expert_votes` | Verified DJs, top-10 bulk, rank points × reputation, shrunk toward weekly prior; reputation learns from later Fan Top 20 |
 | Streaming | `streaming_snapshots` | Public popularity view only; not in combined |
-| Airplay | `airplay_events` → `airplay_snapshots` | Tracker only; not in combined (playlist pitching) |
+| Airplay | `airplay_events` → `airplay_snapshots` | Tracker only; not in combined (playlist pitching). Radio metadata via Docker worker, not Vercel. |
 | Combined | `ChartAggregationService` | Fan + expert only; streaming/airplay discarded |
 
 Weekly cron (`/api/cron/aggregate-charts`) runs aggregation and anomaly detection. `/api/cron/reset-credits` (Monday 00:00 UTC) refreshes fan credit budgets independently. High-severity unresolved anomalies block voting on affected releases (`/api/vote/blocked-releases`).

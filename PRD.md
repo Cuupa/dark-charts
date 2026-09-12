@@ -77,7 +77,8 @@ Dark Charts aggregate three strictly isolated ranking pillars and present them h
 - Admin approval + booking management; availability/checkout/webhook routes.
 
 ### 3.6 Admin CMS
-- Content: artists, releases. Charts: chart control, anomalies, votes.
+- Content: artists, releases. Charts: chart control, anomalies, votes, radio monitor.
+- Passive radio airplay: public stream metadata only (no station accounts). Worker off Vercel. Authenticated `/airplay` for BAND/LABEL. Never a Combined input.
 - Management: users, spotlight, analytics, badges, promotions, metrics.
 - System: settings (chart weights + credit budget), features, colors, API keys, system/health.
 

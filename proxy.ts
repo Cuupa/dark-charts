@@ -1,6 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { resolveRedirectPath } from '@/lib/auth/resolveRedirectPath';
+import {
+  DEMO_AUTH_COOKIE,
+  demoCookieGrantsAdmin,
+  isDemoLoginAllowed,
+} from '@/lib/auth/demoAccounts';
 import { isSupabaseEnvConfigured } from '@/lib/supabase/isConfigured';
 
 const ADMIN_ROLES = new Set(['ADMIN', 'admin', 'editor']);
@@ -10,6 +15,14 @@ function redirectToLogin(request: NextRequest): NextResponse {
   loginUrl.pathname = '/login';
   loginUrl.searchParams.set('returnTo', request.nextUrl.pathname);
   return NextResponse.redirect(loginUrl);
+}
+
+async function hasDemoAdminAccess(request: NextRequest): Promise<boolean> {
+  if (!isDemoLoginAllowed(process.env)) return false;
+  return demoCookieGrantsAdmin(
+    request.cookies.get(DEMO_AUTH_COOKIE)?.value,
+    process.env.JWT_SECRET
+  );
 }
 
 function redirectToLoginUnauthorized(request: NextRequest): NextResponse {
@@ -30,7 +43,12 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!isSupabaseEnvConfigured()) {
-    if (isAdminRoute) return redirectToLogin(request);
+    if (isAdminRoute) {
+      if (await hasDemoAdminAccess(request)) {
+        return NextResponse.next({ request });
+      }
+      return redirectToLogin(request);
+    }
     return NextResponse.next({ request });
   }
 
@@ -84,6 +102,9 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isAdminRoute && !user) {
+    if (await hasDemoAdminAccess(request)) {
+      return response;
+    }
     return redirectToLogin(request);
   }
 

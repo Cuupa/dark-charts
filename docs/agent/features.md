@@ -63,8 +63,9 @@ Self-service promotional placement (Band of the Week, sponsors, subgenre headers
 
 ## Admin control plane
 
-`ADMIN_NAV_GROUPS` (`src/lib/admin/nav.ts`): CONTENT (Artists, Releases), CHARTS (Chart Control, Anomalies, Votes), MANAGEMENT (Users, Spotlight, Analytics, Badges), SYSTEM (Settings, Features, Colors, API Keys, System). Plus **Metrics** and **Promotions**.
+`ADMIN_NAV_GROUPS` (`src/lib/admin/nav.ts`): CONTENT (Artists, Releases), CHARTS (Chart Control, Anomalies, Votes, Radio Monitor), MANAGEMENT (Users, Spotlight, Analytics, Badges), SYSTEM (Settings, Features, Colors, API Keys, System). Plus **Metrics** and **Promotions**.
 
+- **Radio Monitor** — `/admin/radio`: discover public Radio Browser (optional SHOUTcast) stations as **candidates**, enable probes, legal hold, unmatched events, worker heartbeat. Feature flag `radioMonitorEnabled` defaults off. Worker: `workers/radio-monitor`. Public claim: relevant publicly reachable dark-scene stations, not all internet radio. Fingerprinting not in MVP.
 - **Chart Control** — pause/resume voting, trigger weekly recalc.
 - **Anomalies** — review aggregation anomalies; block/unblock releases.
 - **Settings** — chart weights and the fan credit budget.
@@ -84,7 +85,7 @@ Self-service promotional placement (Band of the Week, sponsors, subgenre headers
 
 ## Data API
 
-Server-to-server `/api/v1/*` (charts, artists/top, categories/top, search, overview) behind `DATA_API_TOKEN` or a session (`requireApiAccess`).
+Server-to-server `/api/v1/*` (charts, artists/top, categories/top, search, overview, airplay, radio stations) behind `DATA_API_TOKEN` or a session (`requireApiAccess`).
 
 ## Legal & compliance
 

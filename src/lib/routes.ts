@@ -35,6 +35,8 @@ export const ROUTES = {
   adminColors: '/admin/colors',
   adminApiKeys: '/admin/api-keys',
   adminSystem: '/admin/system',
+  adminRadio: '/admin/radio',
+  airplay: '/airplay',
 } as const;
 
 const MAIN_GENRE_SLUGS: Record<MainGenre, string> = {

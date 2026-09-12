@@ -26,6 +26,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { label: 'Chart Control', href: ROUTES.adminCharts },
       { label: 'Anomalies', href: ROUTES.adminAnomalies },
       { label: 'Votes', href: ROUTES.adminVotes },
+      { label: 'Radio Monitor', href: ROUTES.adminRadio },
     ],
   },
   {

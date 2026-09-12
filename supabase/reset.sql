@@ -264,9 +264,42 @@ CREATE TABLE IF NOT EXISTS radio_stations (
   "nowPlayingFormat" TEXT,
   country TEXT,
   "isActive" BOOLEAN NOT NULL DEFAULT TRUE,
+  "discoverySource" TEXT NOT NULL DEFAULT 'manual',
+  "externalId" TEXT,
+  "homepageUrl" TEXT,
+  tags TEXT[] NOT NULL DEFAULT '{}',
+  bitrate INTEGER,
+  codec TEXT,
+  "monitorEnabled" BOOLEAN NOT NULL DEFAULT FALSE,
+  "legalHold" BOOLEAN NOT NULL DEFAULT FALSE,
+  "healthStatus" TEXT NOT NULL DEFAULT 'unknown',
+  "lastProbeAt" TIMESTAMPTZ,
+  "lastMetadataAt" TIMESTAMPTZ,
+  "lastError" TEXT,
+  "consecutiveFailures" INTEGER NOT NULL DEFAULT 0,
+  priority INTEGER NOT NULL DEFAULT 0,
+  "probeIntervalSeconds" INTEGER NOT NULL DEFAULT 45,
+  "metadataMode" TEXT NOT NULL DEFAULT 'auto',
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "discoverySource" TEXT NOT NULL DEFAULT 'manual';
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "externalId" TEXT;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "homepageUrl" TEXT;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS bitrate INTEGER;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS codec TEXT;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "monitorEnabled" BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "legalHold" BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "healthStatus" TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "lastProbeAt" TIMESTAMPTZ;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "lastMetadataAt" TIMESTAMPTZ;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "lastError" TEXT;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "consecutiveFailures" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS priority INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "probeIntervalSeconds" INTEGER NOT NULL DEFAULT 45;
+ALTER TABLE radio_stations ADD COLUMN IF NOT EXISTS "metadataMode" TEXT NOT NULL DEFAULT 'auto';
 
 CREATE TABLE IF NOT EXISTS airplay_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -282,8 +315,19 @@ CREATE TABLE IF NOT EXISTS airplay_events (
   "idempotencyKey" TEXT,
   "observedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "weekStart" TIMESTAMPTZ NOT NULL,
+  "rawArtist" TEXT,
+  "rawTitle" TEXT,
+  "detectionMethod" TEXT NOT NULL DEFAULT 'icy',
+  confidence DOUBLE PRECISION NOT NULL DEFAULT 1,
+  "streamHost" TEXT,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE airplay_events ADD COLUMN IF NOT EXISTS "rawArtist" TEXT;
+ALTER TABLE airplay_events ADD COLUMN IF NOT EXISTS "rawTitle" TEXT;
+ALTER TABLE airplay_events ADD COLUMN IF NOT EXISTS "detectionMethod" TEXT NOT NULL DEFAULT 'icy';
+ALTER TABLE airplay_events ADD COLUMN IF NOT EXISTS confidence DOUBLE PRECISION NOT NULL DEFAULT 1;
+ALTER TABLE airplay_events ADD COLUMN IF NOT EXISTS "streamHost" TEXT;
 
 CREATE TABLE IF NOT EXISTS airplay_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -368,8 +412,19 @@ CREATE TABLE IF NOT EXISTS system_settings (
   "chartWeights" JSONB NOT NULL DEFAULT '{"fan":0.5,"expert":0.35,"streaming":0.15}'::jsonb,
   "featureFlags" JSONB NOT NULL DEFAULT '{}'::jsonb,
   "themeConfig" JSONB NOT NULL DEFAULT '{}'::jsonb,
+  "radioMonitor" JSONB NOT NULL DEFAULT '{}'::jsonb,
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE system_settings ADD COLUMN IF NOT EXISTS "radioMonitor" JSONB NOT NULL DEFAULT '{}'::jsonb;
+
+CREATE TABLE IF NOT EXISTS radio_monitor_heartbeat (
+  id TEXT PRIMARY KEY DEFAULT 'worker',
+  "seenAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "workerVersion" TEXT,
+  "probesLastMinute" INTEGER NOT NULL DEFAULT 0,
+  error TEXT
 );
 
 INSERT INTO system_settings (id)
@@ -401,6 +456,13 @@ CREATE INDEX IF NOT EXISTS idx_streaming_snapshots_artist_week ON streaming_snap
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tracked_playlists_platform_external ON tracked_playlists (platform, "externalId");
 CREATE INDEX IF NOT EXISTS idx_tracked_playlists_active ON tracked_playlists ("isActive");
 CREATE INDEX IF NOT EXISTS idx_radio_stations_active ON radio_stations ("isActive");
+CREATE UNIQUE INDEX IF NOT EXISTS idx_radio_stations_source_external
+  ON radio_stations ("discoverySource", "externalId")
+  WHERE "externalId" IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_radio_stations_monitor
+  ON radio_stations ("monitorEnabled", "legalHold", "lastProbeAt");
+CREATE INDEX IF NOT EXISTS idx_airplay_events_station_observed
+  ON airplay_events ("sourceStationId", "observedAt" DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_airplay_events_idempotency ON airplay_events ("idempotencyKey") WHERE "idempotencyKey" IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_airplay_events_release_week ON airplay_events ("releaseId", "weekStart");
 CREATE INDEX IF NOT EXISTS idx_airplay_events_week ON airplay_events ("weekStart");
@@ -432,6 +494,7 @@ ALTER TABLE tracked_playlists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE radio_stations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE airplay_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE airplay_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE radio_monitor_heartbeat ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE badges ENABLE ROW LEVEL SECURITY;

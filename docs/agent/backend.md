@@ -11,7 +11,7 @@
 
 Roles: `FAN`, `DJ`, `BAND`, `LABEL`, `ADMIN` (`users.role`). Enforcement at three layers: Edge `proxy.ts`, API route guards, and RLS.
 
-Helper (`src/lib/auth/session.ts` → `resolveAuthFromRequest`) resolves session / JWT / demo. Types: `session` | `jwt` | `api_key`.
+Helper (`src/lib/auth/session.ts` → `resolveAuthFromRequest`) resolves session / JWT / demo. Types: `session` | `jwt` | `api_key`. Demo roles: FAN, DJ, BAND, LABEL, **ADMIN** (`demo-admin@darkcharts.demo`). `/login` exposes Preview admin area. `proxy.ts` accepts `dc-demo-token` for `/admin` when demo login is allowed. Production still requires `ALLOW_DEMO_LOGIN=1`.
 
 ## Data API `/api/v1/*`
 
@@ -34,6 +34,8 @@ Protected by `CRON_SECRET` via `src/lib/cronAuth.ts`. Schedules in `vercel.json`
 | `/api/cron/sync-itunes-artwork` | R2 cover backfill |
 | `/api/cron/streaming-snapshots` | Sunday 22:00 UTC Spotify/YouTube snapshot ingest |
 | `/api/cron/aggregate-airplay` | Sunday 23:50 UTC airplay event rollup → `airplay_snapshots` |
+
+Radio metadata probes run in `workers/radio-monitor` (Docker), not in App Router handlers. Admin APIs under `/api/admin/radio/*` configure stations and settings. Data API: `/api/v1/airplay*`, `/api/v1/radio/stations*`.
 | `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection + credit reset |
 | `/api/cron/reset-credits` | Monday credit refresh (safety net if aggregation did not run) |
 | `/api/cron/evaluate-badges` | Monday fan badge awards for the completed ISO week |
@@ -43,7 +45,7 @@ Sync DAL: `src/lib/api/syncQueue.ts`, worker: `src/lib/sync/processSyncQueue.ts`
 
 ## Admin
 
-`app/admin/*` — route guard on the edge; `withAdminAuth` on admin APIs. Admin nav defined in `src/lib/admin/nav.ts` (groups: CONTENT, CHARTS, MANAGEMENT, SYSTEM). Settings extensions in `src/lib/admin/settingsExtensions.ts`.
+`app/admin/*` — route guard on the edge; `withAdminAuth` on admin APIs. Admin nav defined in `src/lib/admin/nav.ts` (groups: CONTENT, CHARTS including Radio Monitor, MANAGEMENT, SYSTEM). Settings extensions in `src/lib/admin/settingsExtensions.ts`.
 
 ## Spotlight (Stripe)
 

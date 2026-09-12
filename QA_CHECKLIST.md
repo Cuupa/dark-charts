@@ -5,6 +5,9 @@
 - [ ] Chart pillars render correct data for a seeded week (Fan / Club / Combined); disconnected local environments show only the labelled deterministic demo edition
 - [ ] `/charts/streaming` shows snapshot-based popularity or empty — never iTunes/mock stand-ins; overall stays fan+club only
 - [ ] Airplay snapshots never change Combined / Fan / Club placements; `/api/charts?type=airplay` is empty until events exist
+- [ ] Admin → Radio Monitor: feature flag off or settings disabled writes no events; legal-hold stations are never probed; duplicate titles within 30 minutes do not double-count; stale worker banner shows if heartbeat > 2 minutes
+- [ ] `/api/v1/airplay/artist/{id}` requires session or `DATA_API_TOKEN`; unmatched raw titles are excluded from public spin counts
+- [ ] Band/label `/airplay` shows only owned artists and the incomplete-coverage disclaimer
 - [ ] Genre pages: main genre lists subgenres; subgenre page filters correctly (niche windows applied)
 - [ ] Language: default is German; DE | EN in the header both stay visible; switching sets cookie `lang` and `<html lang>`; `/`, `/charts/fan`, `/custom-charts`, `/login`, cookie banner, skip link, and `/release/[id]` stay in one language with no bilingual slash copy and no leftover English on DE
 - [ ] Methodology, About, home, Fan/Club/Streaming, and voting pages explain how charts work in plain language (DE + EN)
@@ -88,3 +91,4 @@
 - [ ] `/imprint`, `/privacy`, `/terms` render operator data from `NEXT_PUBLIC_LEGAL_*`
 - [ ] Email verification works (Resend or Supabase built-in)
 - [ ] Demo login disabled in production unless `ALLOW_DEMO_LOGIN=1`
+- [ ] `/login` offers Preview admin area; in development it lands on `/admin` and shows Radio Monitor in the sidebar; a FAN demo cookie cannot open `/admin`

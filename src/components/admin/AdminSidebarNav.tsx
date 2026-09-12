@@ -21,6 +21,7 @@ import {
   Cpu,
   SignOut,
   List,
+  Broadcast,
   type Icon,
 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
@@ -37,6 +38,7 @@ const ICONS: Record<string, Icon> = {
   'Chart Control': ChartLine,
   Anomalies: ShieldWarning,
   Votes: HandPointing,
+  'Radio Monitor': Broadcast,
   Users: UsersThree,
   Spotlight: Megaphone,
   Analytics: ChartLineUp,
