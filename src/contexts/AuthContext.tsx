@@ -22,7 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: Error | null;
   login: (provider: 'spotify' | 'apple' | 'email', credentials?: LoginCredentials) => Promise<void>;
-  loginDemo: (role: 'FAN' | 'DJ' | 'BAND' | 'LABEL') => Promise<void>;
+  loginDemo: (role: 'FAN' | 'DJ' | 'BAND' | 'LABEL' | 'ADMIN') => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -264,7 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginDemo = async (role: 'FAN' | 'DJ' | 'BAND' | 'LABEL') => {
+  const loginDemo = async (role: 'FAN' | 'DJ' | 'BAND' | 'LABEL' | 'ADMIN') => {
     setIsLoading(true);
     setError(null);
     try {
@@ -306,6 +306,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       await asyncStorage.delete('auth-token');
       await asyncStorage.delete('auth-user');
+      await fetch('/api/auth/demo-login', { method: 'DELETE', credentials: 'include' });
       setUser(null);
     } catch (err) {
       const logoutError = err instanceof Error ? err : new Error('Logout failed');

@@ -13,7 +13,7 @@ interface OAuthLoginButtonsProps {
 export function OAuthLoginButtons({ onSuccess }: OAuthLoginButtonsProps) {
   const { t } = useLanguage();
   const { login: authContextLogin, loginDemo } = useAuth();
-  const [isLoading, setIsLoading] = useState<'spotify' | 'google' | 'email' | `demo-${'FAN' | 'DJ' | 'BAND' | 'LABEL'}` | null>(null);
+  const [isLoading, setIsLoading] = useState<'spotify' | 'google' | 'email' | `demo-${'FAN' | 'DJ' | 'BAND' | 'LABEL' | 'ADMIN'}` | null>(null);
   const [spotifyUser, setSpotifyUser] = useState<OAuthUser | null>(null);
   const [googleUser, setGoogleUser] = useState<OAuthUser | null>(null);
   const [email, setEmail] = useState('');
@@ -72,11 +72,15 @@ export function OAuthLoginButtons({ onSuccess }: OAuthLoginButtonsProps) {
     }
   };
 
-  const handleDemoLogin = async (demoRole: 'FAN' | 'DJ' | 'BAND' | 'LABEL') => {
+  const handleDemoLogin = async (demoRole: 'FAN' | 'DJ' | 'BAND' | 'LABEL' | 'ADMIN') => {
     try {
       setIsLoading(`demo-${demoRole}`);
       await loginDemo(demoRole);
       toast.success(t('oauth.demoSuccess', { role: demoRole }));
+      if (demoRole === 'ADMIN') {
+        window.location.assign('/admin');
+        return;
+      }
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Demo login failed:', error);
@@ -143,6 +147,7 @@ export function OAuthLoginButtons({ onSuccess }: OAuthLoginButtonsProps) {
     { role: 'DJ' as const, label: 'DJ', description: 'Experten-Rankings vergeben' },
     { role: 'BAND' as const, label: 'Band', description: 'Artist-Profil verwalten' },
     { role: 'LABEL' as const, label: 'Label', description: 'Label-Dashboard nutzen' },
+    { role: 'ADMIN' as const, label: 'Admin', description: 'Admin-Bereich ansehen' },
   ];
 
   return (

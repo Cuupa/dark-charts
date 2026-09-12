@@ -20,6 +20,7 @@ The admin is a content + chart-ops console. It is **not** the place for infra se
 | **Chart Control** | Pause/resume voting, trigger weekly recalculation, inspect pillar state. |
 | **Anomalies** | Review high-severity anomalies from aggregation; a pending high-severity anomaly blocks voting on affected releases. |
 | **Votes** | Inspect vote receipts, detect conflicts, and audit the voting surface. |
+| **Radio Monitor** | Discover public dark-scene streams, enable/disable probes, legal hold, unmatched events, worker heartbeat. Radios never install anything. Stream probing runs on a separate worker, not on Vercel. |
 
 ### MANAGEMENT
 
@@ -59,6 +60,8 @@ UPDATE public.users SET role = 'ADMIN' WHERE email = 'you@example.com';
 ### 3. Access
 
 Navigate to `/admin`. If not authenticated you will be redirected to `/login?returnTo=/admin`; after login you are routed by role (`resolveRedirectPath`).
+
+Local preview: `/login` → **Preview admin area** / **Admin-Bereich ansehen**. That creates `demo-admin@darkcharts.demo` (role `ADMIN`) and a short-lived demo cookie. Production stays off unless `ALLOW_DEMO_LOGIN=1`.
 
 ## Chart ops (operator-facing)
 

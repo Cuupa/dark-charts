@@ -67,6 +67,11 @@ export function MethodologyView() {
       </section>
 
       <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-foreground">{t('methodology.airplayTitle')}</h2>
+        <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{t('methodology.airplay')}</p>
+      </section>
+
+      <section className="space-y-3">
         <h2 className="text-xl font-semibold text-foreground">{t('methodology.djsTitle')}</h2>
         <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
           {t('methodology.djs')}{' '}

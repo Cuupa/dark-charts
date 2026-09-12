@@ -5,6 +5,8 @@ All notable changes to this project are documented here. Format follows [Keep a 
 ## [Unreleased]
 
 ### Added
+- Demo admin login on `/login` (`Preview admin area`) using `demo-admin@darkcharts.demo`. Sets `dc-demo-token` so `/admin` works without a Supabase session. Still disabled in production unless `ALLOW_DEMO_LOGIN=1`.
+- Passive radio monitor: public Icecast/SHOUTcast metadata probes via a Docker worker (`workers/radio-monitor`), admin control at `/admin/radio`, Data API `/api/v1/airplay*` and `/api/v1/radio/stations*`, band/label dashboard at `/airplay`. Discovery writes candidates only; fingerprinting is not enabled. Airplay still never merges into Combined.
 - Airplay tracker foundation: `tracked_playlists`, `radio_stations`, `airplay_events`, `airplay_snapshots` in `reset.sql`; Sunday 23:50 UTC rollup (`/api/cron/aggregate-airplay`). Writes `chartType=airplay` when snapshots exist. Never merged into Combined (playlist pitching is a paid-adjacent signal).
 - Label roster on the profile (`/api/label/roster`); `artists.labelId` links do not affect rankings.
 - Public Club DJ ranking at `/djs` and profiles at `/djs/[id]` (display name, no emails).

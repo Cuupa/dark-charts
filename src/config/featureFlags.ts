@@ -36,6 +36,12 @@ export const FEATURE_FLAG_DEFINITIONS: FeatureFlagDefinition[] = [
     description: 'Show a maintenance notice and block non-admin actions.',
     defaultValue: false,
   },
+  {
+    key: 'radioMonitorEnabled',
+    label: 'Radio monitor',
+    description: 'Allow the passive radio worker to probe public streams for now-playing metadata.',
+    defaultValue: false,
+  },
 ];
 
 export type FeatureFlagKey = (typeof FEATURE_FLAG_DEFINITIONS)[number]['key'];

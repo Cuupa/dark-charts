@@ -11,13 +11,16 @@ import { ChartLine, Warning } from '@phosphor-icons/react';
 import { tryCreateBrowserSupabaseClient } from '@/lib/supabase/client';
 import { resolveRedirectPath } from '@/lib/auth/resolveRedirectPath';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function CentralLoginForm() {
   const { t } = useLanguage();
+  const { loginDemo } = useAuth();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const errorParam = searchParams.get('error');
   const returnTo = searchParams.get('returnTo');
@@ -69,6 +72,18 @@ export function CentralLoginForm() {
       toast.error(t('auth.loginFailed'));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDemoAdmin = async () => {
+    setDemoLoading(true);
+    try {
+      await loginDemo('ADMIN');
+      window.location.assign(resolveRedirectPath('ADMIN', returnTo));
+    } catch {
+      toast.error(t('oauth.demoFailed'));
+    } finally {
+      setDemoLoading(false);
     }
   };
 
@@ -162,10 +177,30 @@ export function CentralLoginForm() {
                 autoComplete="current-password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading} size="lg">
+            <Button type="submit" className="w-full" disabled={isLoading || demoLoading} size="lg">
               {isLoading ? (t('auth.signingIn')) : (t('auth.signIn'))}
             </Button>
           </form>
+
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-wider">
+              <span className="bg-card px-2 text-muted-foreground">{t('auth.demoDivider')}</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={isLoading || demoLoading}
+            onClick={() => void handleDemoAdmin()}
+          >
+            {demoLoading ? t('auth.signingIn') : t('auth.demoAdmin')}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">{t('auth.demoAdminHint')}</p>
         </CardContent>
       </Card>
     </div>

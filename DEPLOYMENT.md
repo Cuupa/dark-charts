@@ -70,6 +70,19 @@ Register in Stripe Dashboard:
 
 Vercel sends `Authorization: Bearer <CRON_SECRET>` automatically.
 
+## 6c. Radio monitor worker (optional)
+
+Metadata probes must **not** run in Vercel route handlers. Deploy `workers/radio-monitor/Dockerfile` on an always-on host (Hetzner VPS or Fly.io Machines). Cloud Run scale-to-zero is a poor fit.
+
+```bash
+docker build -f workers/radio-monitor/Dockerfile -t dark-charts-radio-monitor .
+docker run --env-file .env.local dark-charts-radio-monitor
+```
+
+Env: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. Optional: `SHOUTCAST_API_KEY` for SHOUTcast directory discovery.
+
+Then in Admin → Features enable **Radio monitor**, Admin → Radio Monitor save settings with master enable, Discover candidates, and toggle monitoring per station. Apply the new `radio_stations` / `airplay_events` / `radio_monitor_heartbeat` columns via `supabase/reset.sql`.
+
 ## 6b. Bootstrap catalog (after first deploy)
 
 1. **darktunes import** (preferred for label releases): export visible artists + releases from darktunes as JSON, then:

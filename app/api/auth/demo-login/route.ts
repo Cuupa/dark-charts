@@ -10,6 +10,12 @@ import {
 } from '@/lib/api-middleware';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
+import {
+  DEMO_ACCOUNTS,
+  DEMO_AUTH_COOKIE,
+  isDemoLoginAllowed,
+  isDemoRole,
+} from '@/lib/auth/demoAccounts';
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -19,37 +25,11 @@ function getJwtSecret(): string {
   return secret;
 }
 
-const DEMO_ACCOUNTS = [
-  {
-    role: 'FAN' as const,
-    email: 'demo-fan@darkcharts.demo',
-    profileData: { nickname: 'Demo Fan' },
-  },
-  {
-    role: 'DJ' as const,
-    email: 'demo-dj@darkcharts.demo',
-    profileData: { bio: 'Demo DJ account for testing' },
-  },
-  {
-    role: 'BAND' as const,
-    email: 'demo-band@darkcharts.demo',
-    profileData: {},
-  },
-  {
-    role: 'LABEL' as const,
-    email: 'demo-label@darkcharts.demo',
-    profileData: { companyName: 'Demo Records' },
-  },
-] as const;
-
 export const POST = withErrorHandler(async (req: NextRequest) => {
   const cors = handleCors(req, 'POST,OPTIONS');
   if (cors) return cors;
 
-  if (
-    process.env.NODE_ENV === 'production' &&
-    process.env.ALLOW_DEMO_LOGIN !== '1'
-  ) {
+  if (!isDemoLoginAllowed(process.env)) {
     throw new ApiError(403, 'Demo login is disabled in production');
   }
 
@@ -58,10 +38,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const body = await req.json();
   const { role } = body ?? {};
+  if (!isDemoRole(role)) {
+    throw new ApiError(400, 'Invalid role. Must be one of: FAN, DJ, BAND, LABEL, ADMIN');
+  }
   const demoConfig = DEMO_ACCOUNTS.find((a) => a.role === role);
 
   if (!demoConfig) {
-    throw new ApiError(400, 'Invalid role. Must be one of: FAN, DJ, BAND, LABEL');
+    throw new ApiError(400, 'Invalid role. Must be one of: FAN, DJ, BAND, LABEL, ADMIN');
   }
 
   const supabase = createServiceRoleSupabaseClient();
@@ -149,6 +132,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       labelProfile: user.labelProfile ?? null,
     },
   });
+  response.cookies.set(DEMO_AUTH_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 60 * 60 * 2,
+  });
 
   return setRateLimitHeaders(applyCorsToResponse(response, 'POST,OPTIONS'), req, {
     windowMs: 60_000,
@@ -156,7 +146,20 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   });
 });
 
+export const DELETE = withErrorHandler(async (req: NextRequest) => {
+  const cors = handleCors(req, 'POST,DELETE,OPTIONS');
+  if (cors) return cors;
+  const response = NextResponse.json({ success: true });
+  response.cookies.set(DEMO_AUTH_COOKIE, '', {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+  return applyCorsToResponse(response, 'POST,DELETE,OPTIONS');
+});
+
 export const OPTIONS = withErrorHandler(async (req: NextRequest) => {
-  const cors = handleCors(req, 'POST,OPTIONS');
+  const cors = handleCors(req, 'POST,DELETE,OPTIONS');
   return cors ?? NextResponse.json(null, { status: 200 });
 });

@@ -59,7 +59,7 @@ npm run dev
 ```
 
 > **Admin panel** is available at `http://localhost:3000/admin` once authenticated.
-> **Demo login** is disabled in production unless `ALLOW_DEMO_LOGIN=1`.
+> **Demo login** is disabled in production unless `ALLOW_DEMO_LOGIN=1`. Locally, `/login` has **Preview admin area** for `demo-admin@darkcharts.demo`.
 
 ---
 

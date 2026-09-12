@@ -616,6 +616,22 @@ export type Database = {
           nowPlayingFormat: string | null
           country: string | null
           isActive: boolean
+          discoverySource: string
+          externalId: string | null
+          homepageUrl: string | null
+          tags: string[]
+          bitrate: number | null
+          codec: string | null
+          monitorEnabled: boolean
+          legalHold: boolean
+          healthStatus: string
+          lastProbeAt: string | null
+          lastMetadataAt: string | null
+          lastError: string | null
+          consecutiveFailures: number
+          priority: number
+          probeIntervalSeconds: number
+          metadataMode: string
           createdAt: string
           updatedAt: string
         }
@@ -627,6 +643,22 @@ export type Database = {
           nowPlayingFormat?: string | null
           country?: string | null
           isActive?: boolean
+          discoverySource?: string
+          externalId?: string | null
+          homepageUrl?: string | null
+          tags?: string[]
+          bitrate?: number | null
+          codec?: string | null
+          monitorEnabled?: boolean
+          legalHold?: boolean
+          healthStatus?: string
+          lastProbeAt?: string | null
+          lastMetadataAt?: string | null
+          lastError?: string | null
+          consecutiveFailures?: number
+          priority?: number
+          probeIntervalSeconds?: number
+          metadataMode?: string
           createdAt?: string
           updatedAt?: string
         }
@@ -638,6 +670,22 @@ export type Database = {
           nowPlayingFormat?: string | null
           country?: string | null
           isActive?: boolean
+          discoverySource?: string
+          externalId?: string | null
+          homepageUrl?: string | null
+          tags?: string[]
+          bitrate?: number | null
+          codec?: string | null
+          monitorEnabled?: boolean
+          legalHold?: boolean
+          healthStatus?: string
+          lastProbeAt?: string | null
+          lastMetadataAt?: string | null
+          lastError?: string | null
+          consecutiveFailures?: number
+          priority?: number
+          probeIntervalSeconds?: number
+          metadataMode?: string
           createdAt?: string
           updatedAt?: string
         }
@@ -657,6 +705,11 @@ export type Database = {
           idempotencyKey: string | null
           observedAt: string
           weekStart: string
+          rawArtist: string | null
+          rawTitle: string | null
+          detectionMethod: string
+          confidence: number
+          streamHost: string | null
           createdAt: string
         }
         Insert: {
@@ -673,6 +726,11 @@ export type Database = {
           idempotencyKey?: string | null
           observedAt?: string
           weekStart: string
+          rawArtist?: string | null
+          rawTitle?: string | null
+          detectionMethod?: string
+          confidence?: number
+          streamHost?: string | null
           createdAt?: string
         }
         Update: {
@@ -689,6 +747,11 @@ export type Database = {
           idempotencyKey?: string | null
           observedAt?: string
           weekStart?: string
+          rawArtist?: string | null
+          rawTitle?: string | null
+          detectionMethod?: string
+          confidence?: number
+          streamHost?: string | null
           createdAt?: string
         }
       }
@@ -851,6 +914,7 @@ export type Database = {
           chartWeights: Json
           featureFlags: Json
           themeConfig: Json
+          radioMonitor: Json
           createdAt: string
           updatedAt: string
         }
@@ -861,6 +925,7 @@ export type Database = {
           chartWeights?: Json
           featureFlags?: Json
           themeConfig?: Json
+          radioMonitor?: Json
           createdAt?: string
           updatedAt?: string
         }
@@ -871,8 +936,32 @@ export type Database = {
           chartWeights?: Json
           featureFlags?: Json
           themeConfig?: Json
+          radioMonitor?: Json
           createdAt?: string
           updatedAt?: string
+        }
+      }
+      radio_monitor_heartbeat: {
+        Row: {
+          id: string
+          seenAt: string
+          workerVersion: string | null
+          probesLastMinute: number
+          error: string | null
+        }
+        Insert: {
+          id?: string
+          seenAt?: string
+          workerVersion?: string | null
+          probesLastMinute?: number
+          error?: string | null
+        }
+        Update: {
+          id?: string
+          seenAt?: string
+          workerVersion?: string | null
+          probesLastMinute?: number
+          error?: string | null
         }
       }
     }
