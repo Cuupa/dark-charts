@@ -18,7 +18,7 @@ Include as much detail as possible: type of vulnerability, affected file(s)/line
 ## Security Practices
 
 - **Chart integrity** — Fan, Expert, and Streaming pools are stored and processed in isolation; they only merge inside `ChartAggregationService`. No route or UI writes a paid-influence signal into a ranking pillar. The anomaly guard (`src/lib/vote-anomaly-guard.ts`) blocks voting on releases with an unresolved high-severity anomaly.
-- **Row-Level Security (RLS)** — enabled on sensitive tables (`users`, `votes`, `api_credentials`, `spotlight_*`, etc.). Votes and credential data are never writable by the anon client; only service-role Route Handlers mutate.
+- **Row-Level Security (RLS)** — enabled on every table in `reset.sql`, including `vote_anomalies` and `user_listening_snapshots`. Votes, anomalies, listening snapshots, and credential data are never writable by the anon client; only service-role Route Handlers mutate. Covered by `src/lib/schema-rls.test.ts`.
 - **Server writes** — All mutations flow through `app/api/**/route.ts` using the service-role Supabase client (`src/lib/supabase/server.ts`). The browser never holds `SUPABASE_SERVICE_ROLE_KEY`.
 - **`proxy.ts` (Edge)** — `/admin/:path*` requires an authenticated user whose `users.role` is `ADMIN`/`admin`/`editor`; otherwise it redirects to login with `?error=unauthorized`. `/login` routes authenticated users to `resolveRedirectPath(role)`.
 - **API auth** — `src/lib/api-auth.ts` exposes `requireAuth`, `requireVerifiedVoter`, and `requireApiAccess`. `requireVerifiedVoter` rejects voting for unverified email accounts (403 `EMAIL_NOT_VERIFIED`), and demo sessions are the only allowed bypass.

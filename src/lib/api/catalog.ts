@@ -5,6 +5,7 @@ import {
   getLatestWeekStart,
   type FormattedChartEntry,
 } from '@/lib/api/charts';
+import { isPublicChartRelease } from '@/lib/charts/public-visibility';
 
 export type ChartTypeFilter = 'fan' | 'expert' | 'streaming' | 'combined';
 export type SearchType = 'all' | 'songs' | 'artists' | 'charts';
@@ -402,7 +403,7 @@ export async function searchCatalog(
             release:releases (
               *,
               artist:artists (
-                id, name, spotifyId, genres, bio, profileLink, imageUrl
+                id, name, spotifyId, genres, bio, profileLink, imageUrl, isVisible
               )
             )
           `
@@ -415,6 +416,7 @@ export async function searchCatalog(
 
       const q = query.trim().toLowerCase();
       const matched = (data ?? [])
+        .filter((entry) => isPublicChartRelease(entry.release))
         .filter((entry) => {
           const title = entry.release?.title?.toLowerCase() ?? '';
           const artist = entry.release?.artist?.name?.toLowerCase() ?? '';

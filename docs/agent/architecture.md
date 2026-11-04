@@ -41,7 +41,7 @@ Public chart data is served from aggregated `chart_entries`. Voting writes go th
 | Airplay | `airplay_events` → `airplay_snapshots` | Tracker only; not in combined (playlist pitching). Radio metadata via Docker worker, not Vercel. |
 | Combined | `ChartAggregationService` | Fan + expert only; streaming/airplay discarded |
 
-Weekly cron (`/api/cron/aggregate-charts`) runs aggregation and anomaly detection. `/api/cron/reset-credits` (Monday 00:00 UTC) refreshes fan credit budgets independently. High-severity unresolved anomalies block voting on affected releases (`/api/vote/blocked-releases`).
+Weekly cron (`/api/cron/aggregate-charts`, Monday 00:05 UTC) aggregates the completed ISO week (`getCompletedWeekStart`) and runs anomaly detection. `/api/cron/reset-credits` (Monday 00:00 UTC) refreshes fan credit budgets independently. High-severity unresolved anomalies block voting on affected releases (`/api/vote/blocked-releases`). Public chart APIs filter with `isPublicChartRelease`.
 
 ## Key modules
 

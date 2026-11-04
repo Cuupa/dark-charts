@@ -26,6 +26,11 @@ Inventory of legacy / hardcode / security residuals, plus known non-goals. Keep 
 | Public `select('*')` in old DAL paths | Column leakage risk | Move to strict column whitelists / `PublicArtist`-style mappers |
 | In-memory rate limits / backoff | Multi-instance serverless | Consider distributed limiter for high-risk public routes |
 | No E2E suite | Integrity regressions can slip | Track in [E2E-TESTS.md](../E2E-TESTS.md); add Playwright per phase |
+| Artist streaming score on latest release | A new song can inherit the artist's popularity index | Keep streaming labelled as an index; split artist/track charts before claiming track streams |
+| Delete-then-insert chart publish | A failed insert leaves the week empty | Recalculate off-line, then swap rows atomically |
+| Anomalies persisted after publish | Suspicious votes can already sit in the published list | Detect and hold before insert |
+| `persistVoteAnomalies` deletes the week first | Manual review state can vanish | Immutable anomaly history with its own status |
+| Streaming ingest `.limit(40)` | Later artists never get a snapshot | Cursor pagination with checkpoints |
 
 ## Known non-goals
 

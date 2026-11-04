@@ -4,6 +4,9 @@
 - [ ] Public routes load: `/`, `/charts/[pillar]`, `/charts/archive`, `/history`, `/genre/[main]`, `/custom-charts`, `/methodology`, `/spotlight`, `/about`, `/imprint`, `/privacy`, `/terms`, `/search`, `/artist/[id]`, `/release/[id]`
 - [ ] Chart pillars render correct data for a seeded week (Fan / Club / Combined); disconnected local environments show only the labelled deterministic demo edition
 - [ ] `/charts/streaming` shows snapshot-based popularity or empty — never iTunes/mock stand-ins; overall stays fan+club only
+- [ ] Methodology and streaming copy call the list a popularity index, not stream counts
+- [ ] Fan / Club / Combined / genre charts omit titles with score 0
+- [ ] Hidden releases and hidden artists do not appear on `/api/charts`, `/api/charts/current`, `/api/charts/history`, or `/api/v1/charts`
 - [ ] Airplay snapshots never change Combined / Fan / Club placements; `/api/charts?type=airplay` is empty until events exist
 - [ ] Admin → Radio Monitor: feature flag off or settings disabled writes no events; legal-hold stations are never probed; duplicate titles within 30 minutes do not double-count; stale worker banner shows if heartbeat > 2 minutes
 - [ ] `/api/v1/airplay/artist/{id}` requires session or `DATA_API_TOKEN`; unmatched raw titles are excluded from public spin counts
@@ -56,7 +59,8 @@
 - [ ] Darktunes import + scene-artist CSV seed produce visible releases/artists
 - [ ] R2 cover-art cache: artwork lands on CDN; fallback to external URL on failure
 - [ ] `POST /api/sync` (with `CRON_SECRET`) drains the queue; `/api/sync/queue` enqueues
-- [ ] `/api/cron/aggregate-charts` runs and produces anomalies (if any)
+- [ ] `/api/cron/aggregate-charts` runs Monday 00:05 UTC for the completed ISO week and produces anomalies (if any)
+- [ ] `vote_anomalies` and `user_listening_snapshots` have RLS enabled (deny-by-default for anon)
 - [ ] `/api/cron/reset-credits` (Monday) restores `fan_profiles.remainingCredits` to the budget
 - [ ] `/api/cron/evaluate-badges` awards Thronwächter / Dauergast / Genre-Scout for the completed week
 - [ ] `/api/cron/purge-inactive` does not delete admins or users with votes/bookings in the last 24 months

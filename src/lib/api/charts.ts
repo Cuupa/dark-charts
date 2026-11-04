@@ -1,5 +1,6 @@
 import type { AppSupabaseClient } from '@/types/supabase-client'
 import type { Database } from '@/types/database'
+import { isPublicChartRelease } from '@/lib/charts/public-visibility'
 
 type ChartEntryRow = Database['public']['Tables']['chart_entries']['Row']
 type ReleaseRow = Database['public']['Tables']['releases']['Row']
@@ -53,6 +54,7 @@ type ChartEntryWithRelations = ChartEntryRow & {
           | 'bio'
           | 'profileLink'
           | 'imageUrl'
+          | 'isVisible'
         > | null
       })
     | null
@@ -141,7 +143,8 @@ export async function getChartEntries(
             genres,
             bio,
             profileLink,
-            imageUrl
+            imageUrl,
+            isVisible
           )
         )
       `
@@ -155,5 +158,7 @@ export async function getChartEntries(
     throw new Error(`Failed to fetch chart entries: ${error.message}`)
   }
 
-  return ((data ?? []) as ChartEntryWithRelations[]).map(formatChartEntry)
+  return ((data ?? []) as ChartEntryWithRelations[])
+    .filter((entry) => isPublicChartRelease(entry.release))
+    .map(formatChartEntry)
 }

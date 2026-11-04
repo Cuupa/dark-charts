@@ -12,7 +12,7 @@ The Dark Charts product surface — pillars, voting, taxonomy, revenue isolation
 | Expert (Club) | Rank points × reputation, shrunk toward weekly prior | `/charts/club` | `src/lib/math/expert-ranking.ts` |
 | Combined | Fan + expert weighted merge | `/` | `ChartAggregationService.ts` |
 
-Public ranking pillars are **Fan** and **Club**. **Streaming** is a separate popularity view at `/charts/streaming` (Spotify 85% + YouTube 15% on stored snapshots). It is **not** unique listeners and is **not** merged into overall (`normalizeHybridWeights`). Snapshots are ingested Sunday 22:00 UTC (`/api/cron/streaming-snapshots`) before aggregation. **Airplay** (playlists/radio/DJ spins) is a backend tracker only: events roll up Sunday 23:50 UTC (`/api/cron/aggregate-airplay`) into `airplay_snapshots` and optional `chartType=airplay` rows. It is **not** merged into Combined (playlist placement can be paid). Expert ranking is a 10/8/6/4/2/1 points table times reputation, then shrunk toward the weekly mean (`shrinkExpertScores`, prior strength 5).
+Public ranking pillars are **Fan** and **Club**. **Streaming** is a separate popularity index at `/charts/streaming` (Spotify 85% + YouTube 15% on stored snapshots). It is **not** licensed stream counts, **not** unique listeners, and is **not** merged into overall (`normalizeHybridWeights`). Snapshots are ingested Sunday 22:00 UTC (`/api/cron/streaming-snapshots`) before aggregation. Aggregation (`/api/cron/aggregate-charts`) runs Monday 00:05 UTC for the completed ISO week and only places titles with score > 0. Public chart reads drop hidden releases and hidden artists (`src/lib/charts/public-visibility.ts`). **Airplay** (playlists/radio/DJ spins) is a backend tracker only: events roll up Sunday 23:50 UTC (`/api/cron/aggregate-airplay`) into `airplay_snapshots` and optional `chartType=airplay` rows. It is **not** merged into Combined (playlist placement can be paid). Expert ranking is a 10/8/6/4/2/1 points table times reputation, then shrunk toward the weekly mean (`shrinkExpertScores`, prior strength 5).
 
 `/charts/archive` and `/history` both read weekly `chart_entries` (same archive UI). Anomalies (`vote-anomaly.ts` / `vote-anomaly-guard.ts`) flag unusual vote velocity; a high-severity unresolved anomaly blocks voting on the affected release (`/api/vote/blocked-releases`).
 
@@ -31,7 +31,7 @@ Verified DJs/curators submit a top-10 bulk ballot (`expert_votes`, also keyed by
 
 ## Streaming calculation
 
-Public route `/charts/streaming`. Weekly snapshots (`streaming_snapshots`) from Spotify popularity/followers and optional YouTube subscriber score. Combined overall still ignores streaming. Empty weeks stay empty (no iTunes fallback).
+Public route `/charts/streaming`. Weekly snapshots (`streaming_snapshots`) from Spotify popularity/followers and optional YouTube subscriber score. This is a popularity index, not stream counts. Combined overall still ignores streaming. Empty weeks stay empty (no iTunes fallback).
 
 ## Genre taxonomy
 

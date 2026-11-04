@@ -1,3 +1,5 @@
+import { filterPublicChartEntries } from '@/lib/charts/public-visibility';
+
 export function formatChartEntry(entry: {
   id: string;
   placement: number;
@@ -16,6 +18,7 @@ export function formatChartEntry(entry: {
     odesliLinks: unknown;
     itunesArtworkUrl: string | null;
     vercelBlobUrl: string | null;
+    isVisible?: boolean | null;
     artist?: {
       id: string;
       name: string;
@@ -24,6 +27,7 @@ export function formatChartEntry(entry: {
       bio: string | null;
       profileLink: string | null;
       imageUrl: string | null;
+      isVisible?: boolean | null;
     } | null;
   } | null;
 }) {
@@ -60,4 +64,14 @@ export function formatChartEntry(entry: {
         }
       : null,
   };
+}
+
+export function formatPublicChartEntries(
+  entries: Array<Parameters<typeof formatChartEntry>[0] | null | undefined> | null | undefined
+) {
+  return filterPublicChartEntries(
+    (entries ?? []).filter((entry): entry is Parameters<typeof formatChartEntry>[0] =>
+      Boolean(entry)
+    )
+  ).map(formatChartEntry);
 }

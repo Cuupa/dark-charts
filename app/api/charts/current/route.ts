@@ -7,7 +7,7 @@ import {
   setRateLimitHeaders,
 } from '@/lib/api-middleware';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
-import { formatChartEntry } from '@/lib/chart-format';
+import { formatPublicChartEntries } from '@/lib/chart-format';
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const cors = handleCors(req, 'GET,OPTIONS');
@@ -44,7 +44,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     throw new ApiError(500, error.message);
   }
 
-  const formattedEntries = (chartEntries ?? []).map((entry) => formatChartEntry(entry));
+  const formattedEntries = formatPublicChartEntries(chartEntries);
   const response = NextResponse.json({
     success: true,
     entries: formattedEntries,

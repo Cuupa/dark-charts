@@ -13,6 +13,7 @@ import { blendStreamingPopularity, fetchYoutubePopularity } from '@/lib/youtube-
 import { getSystemSettings } from '@/lib/api/systemSettings';
 import { calculateAirplayScore } from '@/lib/airplay/airplayScore';
 import { getPreviousWeekStart, getIsoWeekYear } from '@/lib/week';
+import { rankQualifiedItems } from '@/lib/charts/qualify';
 
 type ChartTypeKey = 'fan' | 'expert' | 'streaming' | 'combined' | 'airplay';
 
@@ -50,6 +51,7 @@ function calculateStreamingScore(
     ? blendStreamingPopularity(previous.spotifyPopularity, previous.youtubePopularity ?? 0)
     : blendedPopularity;
 
+  // Popularity index, not licensed stream counts.
   const estimatedStreams = Math.round(Math.pow(10, blendedPopularity / 20));
   const previousStreams = previous
     ? Math.round(Math.pow(10, previousBlended / 20))
@@ -388,16 +390,10 @@ export class ChartAggregationService {
       chartType: ChartTypeKey,
       scoreFn: (item: (typeof combinedScores)[0]) => number
     ) => {
-      const sorted = [...combinedScores]
-        .filter(
-          (item) =>
-            (chartType !== 'streaming' && chartType !== 'airplay') || scoreFn(item) > 0
-        )
-        .sort((a, b) => scoreFn(b) - scoreFn(a));
+      const ranked = rankQualifiedItems(combinedScores, scoreFn);
       const placements = lastWeekPlacements.get(chartType) ?? new Map<string, number>();
 
-      sorted.forEach((item, index) => {
-        const placement = index + 1;
+      for (const { item, placement, score } of ranked) {
         const lastPlacement = placements.get(item.releaseId);
         const movement =
           lastPlacement !== undefined ? lastPlacement - placement : 0;
@@ -408,7 +404,7 @@ export class ChartAggregationService {
           genre: null,
           weekStart: weekStartIso,
           placement,
-          score: scoreFn(item),
+          score,
           fanScore: item.fanScore,
           expertScore: item.expertScore,
           communityPower: chartType === 'combined' ? item.communityPower : 0,
@@ -416,7 +412,7 @@ export class ChartAggregationService {
           weekNumber,
           year,
         });
-      });
+      }
     };
 
     buildEntries('fan', (i) => i.fanScore);

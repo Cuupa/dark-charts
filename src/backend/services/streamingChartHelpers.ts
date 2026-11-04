@@ -23,7 +23,7 @@ export async function calculateAndDisplayStreamingCharts() {
     
     console.log(`${position.toString().padStart(2)}. ${entry.artistName}`);
     console.log(`    Score: ${entry.score.toFixed(2)}`);
-    console.log(`    Streams: ${entry.totalStreams.toLocaleString('de-DE')}`);
+    console.log(`    Popularity index: ${entry.totalStreams.toLocaleString('de-DE')}`);
     console.log(`    Wachstum: ${trend} ${entry.weeklyGrowth.toFixed(1)}%`);
     console.log(`    Engagement: ${entry.engagementRatio.toFixed(2)}`);
     console.log(`    Follower: ${entry.followerCount.toLocaleString('de-DE')}`);

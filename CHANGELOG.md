@@ -4,6 +4,15 @@ All notable changes to this project are documented here. Format follows [Keep a 
 
 ## [Unreleased]
 
+### Fixed
+- Fan, Club, Combined, and genre charts only place titles with a score above zero.
+- Public chart APIs (`/api/charts`, `/current`, `/history`, `/api/v1/charts`) omit hidden releases and hidden artists.
+- Weekly aggregation runs Monday 00:05 UTC for the completed ISO week, after the voting window closes.
+- RLS enabled on `vote_anomalies` and `user_listening_snapshots`.
+
+### Changed
+- Streaming copy labels the list as a popularity index from Spotify/YouTube snapshots, not licensed stream counts.
+
 ### Added
 - Demo admin login on `/login` (`Preview admin area`) is in-memory only: no `users` row, works with no database. Sets `dc-demo-token` for `/admin`. Off in production unless `ALLOW_DEMO_LOGIN=1`.
 - Passive radio monitor: public Icecast/SHOUTcast metadata probes via a Docker worker (`workers/radio-monitor`), admin control at `/admin/radio`, Data API `/api/v1/airplay*` and `/api/v1/radio/stations*`, band/label dashboard at `/airplay`. Discovery writes candidates only; fingerprinting is not enabled. Airplay still never merges into Combined.
