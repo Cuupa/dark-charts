@@ -27,6 +27,11 @@ export function getPreviousWeekStart(weekStart: Date): Date {
   return prev;
 }
 
+/** ISO week whose voting window has fully closed (Monday 00:00 UTC). */
+export function getCompletedWeekStart(date = new Date()): Date {
+  return getPreviousWeekStart(getWeekStartMonday(date));
+}
+
 export function getNextMonday(date = new Date()): Date {
   const day = date.getUTCDay();
   const daysUntil = day === 0 ? 1 : 8 - day;

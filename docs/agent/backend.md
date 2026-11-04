@@ -36,7 +36,7 @@ Protected by `CRON_SECRET` via `src/lib/cronAuth.ts`. Schedules in `vercel.json`
 | `/api/cron/aggregate-airplay` | Sunday 23:50 UTC airplay event rollup → `airplay_snapshots` |
 
 Radio metadata probes run in `workers/radio-monitor` (Docker), not in App Router handlers. Admin APIs under `/api/admin/radio/*` configure stations and settings. Data API: `/api/v1/airplay*`, `/api/v1/radio/stations*`.
-| `/api/cron/aggregate-charts` | Weekly chart aggregation + anomaly detection + credit reset |
+| `/api/cron/aggregate-charts` | Monday 00:05 UTC: aggregate the completed ISO week + anomaly detection + credit reset |
 | `/api/cron/reset-credits` | Monday credit refresh (safety net if aggregation did not run) |
 | `/api/cron/evaluate-badges` | Monday fan badge awards for the completed ISO week |
 | `/api/cron/purge-inactive` | Monday GDPR purge of accounts inactive 24 months (non-admin) |

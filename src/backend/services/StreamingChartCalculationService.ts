@@ -127,8 +127,7 @@ export class StreamingChartCalculationService {
         try {
           const spotifyData = await getArtistStreamingData(artist.spotifyId);
 
-          // Spotify popularity (0-100) approximates relative streaming volume.
-          // Scale it to make the logarithmic score meaningful.
+          // Spotify popularity (0-100) is an index, not licensed stream counts.
           const estimatedStreams = Math.round(Math.pow(10, spotifyData.popularity / 20));
 
           const { data: existingSnapshot } = await supabase

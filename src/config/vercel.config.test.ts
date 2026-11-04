@@ -67,4 +67,10 @@ describe('vercel.json config', () => {
       expect(fields.length, `cron schedule "${cron.schedule}" must have 5 fields`).toBe(5);
     }
   });
+
+  it('aggregates charts after the ISO week voting window closes', () => {
+    const crons = vercelConfig['crons'] as Array<{ path: string; schedule: string }>;
+    const chartCron = crons.find((cron) => cron.path === '/api/cron/aggregate-charts');
+    expect(chartCron?.schedule).toBe('5 0 * * 1');
+  });
 });

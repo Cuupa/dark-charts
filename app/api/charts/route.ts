@@ -8,7 +8,7 @@ import {
   setRateLimitHeaders,
 } from '@/lib/api-middleware';
 import { tryCreateServiceRoleSupabaseClient } from '@/lib/supabase/server';
-import { formatChartEntry } from '@/lib/chart-format';
+import { formatPublicChartEntries } from '@/lib/chart-format';
 import { getStartOfWeek } from '@/lib/api-auth';
 import { mainGenreChartKey } from '@/lib/genre-charts';
 import { MainGenre } from '@/types';
@@ -100,7 +100,7 @@ async function fetchChartsFromDatabase(
 
   if (!chartEntries?.length) return null;
 
-  return chartEntries.map((entry) => formatChartEntry(entry));
+  return formatPublicChartEntries(chartEntries);
 }
 
 export const GET = withErrorHandler(async (req: NextRequest) => {

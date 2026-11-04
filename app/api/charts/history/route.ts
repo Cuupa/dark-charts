@@ -8,7 +8,7 @@ import {
   setRateLimitHeaders,
 } from '@/lib/api-middleware';
 import { createServiceRoleSupabaseClient } from '@/lib/supabase/server';
-import { formatChartEntry } from '@/lib/chart-format';
+import { formatPublicChartEntries } from '@/lib/chart-format';
 
 const querySchema = z.object({
   year: z
@@ -65,7 +65,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     throw new ApiError(500, error.message);
   }
 
-  const formattedEntries = (entries ?? []).map((entry) => formatChartEntry(entry));
+  const formattedEntries = formatPublicChartEntries(entries);
   const response = NextResponse.json({
     success: true,
     year,

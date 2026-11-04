@@ -6,6 +6,7 @@ import {
   getNextMonday,
   isoWeekToMonday,
   getIsoWeekYear,
+  getCompletedWeekStart,
 } from './week';
 
 describe('week utilities', () => {
@@ -45,5 +46,12 @@ describe('week utilities', () => {
     const { weekNumber, year } = getIsoWeekYear(date);
     expect(year).toBe(2025);
     expect(weekNumber).toBe(14);
+  });
+
+  it('getCompletedWeekStart is the previous Monday after the voting window closes', () => {
+    const mondayJustAfterClose = new Date('2025-04-07T00:05:00.000Z');
+    expect(getCompletedWeekStart(mondayJustAfterClose).toISOString()).toBe(
+      '2025-03-31T00:00:00.000Z'
+    );
   });
 });

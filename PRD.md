@@ -21,7 +21,7 @@ Dark Charts aggregate three strictly isolated ranking pillars and present them h
 1. **Fan charts** — democratic Quadratic Voting with a weekly `voice credits` budget and trust-level Sybil resistance.
 2. **Expert (Club) charts** — rank-points over verified DJ/curator top-10 ballots, weighted by reputation.
 3. **Combined** — weighted merge of fan + expert only.
-4. **Streaming (separate)** — Spotify/YouTube popularity snapshots. Not unique listeners; not in the overall merge.
+4. **Streaming (separate)** — Spotify/YouTube popularity index (not licensed stream counts, not unique listeners); not in the overall merge.
 
 **Experience qualities:** independent · transparent · high-contrast dark aesthetic · WCAG 2.1 AA on public UI · niche-aware.
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler, ApiError } from '@/lib/errors';
 import { chartAggregationService } from '@/backend/services/ChartAggregationService';
 import { logger } from '@/lib/logger';
-import { getWeekStartMonday } from '@/lib/week';
+import { getCompletedWeekStart } from '@/lib/week';
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const authHeader = req.headers.get('authorization');
@@ -10,8 +10,8 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     throw new ApiError(401, 'Unauthorized');
   }
 
-  // Cron runs Sunday 23:55 UTC — aggregate the ISO week ending that night
-  const weekStart = getWeekStartMonday();
+  // Cron runs Monday 00:05 UTC — aggregate the ISO week that just closed
+  const weekStart = getCompletedWeekStart();
 
   await chartAggregationService.aggregateChartsForWeek(weekStart);
   logger.info('Weekly charts aggregated successfully', { weekStart: weekStart.toISOString() });

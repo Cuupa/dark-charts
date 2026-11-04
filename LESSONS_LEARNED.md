@@ -20,7 +20,9 @@ Distilled anti-patterns from project history. **Append session findings before o
 | Mixing pillars before aggregation | Fan / Expert / Streaming pools stay isolated until `ChartAggregationService`. Never merge for a UI shortcut. |
 | Letting revenue touch ranking | Spotlight revenue must never write a paid signal into a ranking pillar. |
 | Ignoring vote velocity anomalies | Surface anomalies; a high-severity unresolved anomaly blocks voting on affected releases. |
-| Raw streaming counts as a popularity signal | Normalise by listener loyalty (streams ÷ unique listeners), not raw click counts. |
+| Raw streaming counts as a popularity signal | Dark Charts has no licensed stream counts. Public copy must say popularity index. Do not convert Spotify popularity into fake stream totals for display. |
+| Placing titles with score 0 | Fan/Club/Combined/genre charts only insert score > 0 (`qualifiesForChartPlacement`). |
+| Aggregating before the voting window closes | Chart cron runs after Monday 00:00 UTC and uses `getCompletedWeekStart`. |
 
 ## Voting & auth
 
@@ -41,6 +43,12 @@ Distilled anti-patterns from project history. **Append session findings before o
 ---
 
 ## Session additions
+
+### 2026-11-04 — Chart integrity P0s from the professional-charts audit
+
+**Symptom:** Streaming UI could be read as real stream counts; Fan/Club lists included zero-score titles; Sunday 23:55 UTC aggregation dropped the last five minutes of the voting window; public `/api/charts/current` and `/history` returned hidden catalog rows; `vote_anomalies` and `user_listening_snapshots` had no RLS.
+**Cause:** Aggregation treated any metric map key as a placement; cron ran inside the ISO week; visibility lived only on some catalog paths; RLS list in `reset.sql` lagged new tables.
+**Rule / Fix:** Qualify placements with score > 0. Aggregate Monday 00:05 UTC for the closed week. Filter public chart reads with `isPublicChartRelease`. Enable RLS on every `CREATE TABLE` (`schema-rls.test.ts`). Label streaming as a popularity index until licensed usage data exists.
 
 ### 2026-09-11 — Catalog keys without t() still leak English
 

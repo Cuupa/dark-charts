@@ -46,4 +46,32 @@ describe('genre-aggregation', () => {
     expect(gothicFan[0].releaseId).toBe('r1');
     expect(doomFan).toHaveLength(0);
   });
+
+  it('omits zero-score titles from genre charts', () => {
+    const inserts = buildGenreChartInserts({
+      combinedScores: [
+        {
+          releaseId: 'r1',
+          fanScore: 2000,
+          expertScore: 0,
+          streamingScore: 0,
+          weightedScore: 0.8,
+          communityPower: 40,
+        },
+      ],
+      releaseGenreMap: new Map([
+        ['r1', { releaseGenres: ['Gothic Rock'], artistGenres: [] }],
+      ]),
+      fanVoteCountByRelease: new Map([['r1', 6]]),
+      weekStartIso: '2026-06-23T00:00:00.000Z',
+      weekNumber: 26,
+      year: 2026,
+    });
+
+    const gothic = inserts.filter((entry) => entry.genre === 'Gothic Rock');
+    expect(gothic.some((entry) => entry.chartType === 'fan')).toBe(true);
+    expect(gothic.some((entry) => entry.chartType === 'expert')).toBe(false);
+    expect(gothic.some((entry) => entry.chartType === 'streaming')).toBe(false);
+    expect(gothic.every((entry) => entry.score > 0)).toBe(true);
+  });
 });

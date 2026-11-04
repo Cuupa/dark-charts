@@ -8,6 +8,7 @@ import {
   releaseMatchesGenre,
   releaseMatchesMainGenre,
 } from '@/lib/genre-charts';
+import { rankQualifiedItems } from '@/lib/charts/qualify';
 
 export interface GenreAggregationScore {
   releaseId: string;
@@ -83,18 +84,19 @@ export function buildGenreChartInserts(params: {
     if (eligible.length === 0) return;
 
     for (const chartType of chartTypes) {
-      const sorted = [...eligible]
-        .sort((a, b) => scoreFns[chartType](b) - scoreFns[chartType](a))
-        .slice(0, GENRE_CHART_LIMIT);
+      const ranked = rankQualifiedItems(eligible, scoreFns[chartType]).slice(
+        0,
+        GENRE_CHART_LIMIT
+      );
 
-      sorted.forEach((item, index) => {
+      for (const { item, placement, score } of ranked) {
         inserts.push({
           releaseId: item.releaseId,
           chartType,
           genre: genreKey,
           weekStart: weekStartIso,
-          placement: index + 1,
-          score: scoreFns[chartType](item),
+          placement,
+          score,
           fanScore: item.fanScore,
           expertScore: item.expertScore,
           communityPower: chartType === 'combined' ? item.communityPower : 0,
@@ -102,7 +104,7 @@ export function buildGenreChartInserts(params: {
           weekNumber,
           year,
         });
-      });
+      }
     }
   };
 
